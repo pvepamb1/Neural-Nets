@@ -11,7 +11,6 @@ public class NN {
 	private static int layer = 1;
 	private static float eta = 0.5f;
 	private static float[] biasArray = { 0.35f, 0.60f };
-	private static float[] testWeights = { 0.15f, 0.25f, 0.20f, 0.30f, 0.40f, 0.50f, 0.45f, 0.55f };
 
 	public static void main(String[] args) {
 		inputArray.add(0.05f);
@@ -19,19 +18,19 @@ public class NN {
 		createNeurons();
 		createConnections();
 		setNeurons();
-		//System.out.println("Iterations?");
-		//Scanner s = new Scanner(System.in);
-		//int a = s.nextInt();
-		//s.close();
-		for (int i = 0; i <= 10000; i++) {
+		System.out.println("Iterations?");
+		Scanner s = new Scanner(System.in);
+		int a = s.nextInt();
+		s.close();
+		for (int i = 0; i <= a; i++) {
 			for (Neuron n : neuronList) {
 				if (n.getLayer() != 0)
 					calculate(n);
 			}
-			//error();
 			backpropogate();
 			update();
 		}
+		error();
 		test();
 	}
 
@@ -55,7 +54,7 @@ public class NN {
 				if (n.getLayer() == i) {
 					for (Neuron n2 : neuronList) {
 						if (n2.getLayer() == i + 1) {
-							weightArray.add(new Connection(n, n2, testWeights[id], 0.0f, id, i));
+							weightArray.add(new Connection(n, n2, (float) Math.random(), 0.0f, id, i));
 							id++;
 						}
 					}
@@ -159,22 +158,22 @@ public class NN {
 			c.setWeight(c.getNewWeight());
 		}
 	}
-	
+
 	public static void test() {
-		
-		for(Neuron n: neuronList)
-			if(n.getLayer()==layer)
-			System.out.println(n.getOutput().getOutput());
-	
+
+		for (Neuron n : neuronList)
+			if (n.getLayer() == layer)
+				System.out.println(n.getOutput().getOutput());
+
 		neuronList.get(0).getOutput().setOutput(7.15f);
 		neuronList.get(1).getOutput().setOutput(8.10f);
-		
-		for (Neuron n : neuronList) 
+
+		for (Neuron n : neuronList)
 			if (n.getLayer() != 0)
 				calculate(n);
-		
-		for(Neuron n: neuronList)
-			if(n.getLayer()==layer)
-			System.out.println(n.getOutput().getOutput());
+
+		for (Neuron n : neuronList)
+			if (n.getLayer() == layer)
+				System.out.println(n.getOutput().getOutput());
 	}
 }
