@@ -44,6 +44,7 @@ public class Connection {
 	public int getId() {
 		return id;
 	}
+//Yo!
 
 	public void setId(int id) {
 		this.id = id;
