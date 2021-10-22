@@ -37,7 +37,7 @@ public class NeuralNetwork
                 if (neuron.getLayer() != 0)
                     calculate(neuron);
             }
-            backpropogate();
+            backPropagate();
             update();
         }
 
@@ -91,16 +91,12 @@ public class NeuralNetwork
         {
             if (neuron.getLayer() != 0)
             {
-                ArrayList<Float> weights = new ArrayList<>();
-                ArrayList<OutputWrap> inputs = new ArrayList<>();
                 ArrayList<Connection> connections = new ArrayList<>();
-                for (Connection c : NeuralNetwork.weights)
+                for (Connection connection : NeuralNetwork.weights)
                 {
-                    if (c.getOutput() == neuron)
+                    if (connection.getOutput() == neuron)
                     {
-                        connections.add(c);
-                        weights.add(c.getWeight());
-                        inputs.add(c.getInput().getOutput());
+                        connections.add(connection);
                     }
                 }
                 neuron.setConnections(connections);
@@ -123,60 +119,60 @@ public class NeuralNetwork
         }
     }
 
-    public static void calculate(Neuron n)
+    public static void calculate(Neuron neuron)
     {
         float total = 0;
-        for (int i = 0; i < n.getWeights().size(); i++)
+        for (int i = 0; i < neuron.getWeights().size(); i++)
         {
-            total += n.getWeights().get(i) * n.getInputs().get(i).getOutput();
+            total += neuron.getWeights().get(i) * neuron.getInputs().get(i).getOutput();
         }
-        total += n.getBias();
+        total += neuron.getBias();
         total = (float) (1 / (1 + Math.exp(-total)));
-        n.getOutput().setOutput(total);
+        neuron.getOutput().setOutput(total);
     }
 
     public static void error()
     {
-        float total = 0.0f;
-        for (Neuron n : neurons)
+        float totalError = 0.0f;
+        for (Neuron neuron : neurons)
         {
-            if (n.getLayer() == layer)
+            if (neuron.getLayer() == layer)
             {
-                total += (float) 1 / 2 * (Math.pow(n.getExpectedOut() - n.getOutput().getOutput(),
+                totalError += (float) 1 / 2 * (Math.pow(neuron.getExpectedOut() - neuron.getOutput().getOutput(),
                         2));
             }
         }
-        System.out.println(total);
+        System.out.println("Total error: " + totalError);
     }
 
-    public static void backpropogate()
+    public static void backPropagate()
     {
 
         int temp = layer - 1;
         while (temp >= 0)
         {
-            for (Connection c : weights)
+            for (Connection connection : weights)
             {
-                if (c.getLayer() == temp)
+                if (connection.getLayer() == temp)
                 {
                     if (temp == layer - 1)
                     {
-                        float err = c.getOutput().getOutput().getOutput() - c.getOutput()
+                        float err = connection.getOutput().getOutput().getOutput() - connection.getOutput()
                                 .getExpectedOut();
-                        float err2 = c.getOutput().getOutput().getOutput()
-                                * (1 - (c.getOutput().getOutput().getOutput()));
-                        float totalErr = err * err2 * c.getInput().getOutput().getOutput();
-                        c.setNewWeight(c.getWeight() - eta * totalErr);
+                        float err2 = connection.getOutput().getOutput().getOutput()
+                                * (1 - (connection.getOutput().getOutput().getOutput()));
+                        float totalErr = err * err2 * connection.getInput().getOutput().getOutput();
+                        connection.setNewWeight(connection.getWeight() - eta * totalErr);
                     }
                     else
                     {
                         float totalerr1 = 0.0f;
-                        Neuron n = c.getOutput();
+                        Neuron neuron = connection.getOutput();
                         for (Connection c2 : weights)
                         {
                             if (c2.getLayer() == temp + 1)
                             {
-                                if (c2.getInput() == n)
+                                if (c2.getInput() == neuron)
                                 {
                                     float err = c2.getOutput().getOutput().getOutput()
                                             - c2.getOutput().getExpectedOut();
@@ -187,11 +183,11 @@ public class NeuralNetwork
                                 }
                             }
                         }
-                        float t2 = c.getOutput().getOutput().getOutput()
-                                * (1 - (c.getOutput().getOutput().getOutput()));
-                        float t3 = c.getInput().getOutput().getOutput();
+                        float t2 = connection.getOutput().getOutput().getOutput()
+                                * (1 - (connection.getOutput().getOutput().getOutput()));
+                        float t3 = connection.getInput().getOutput().getOutput();
                         float t = totalerr1 * t2 * t3;
-                        c.setNewWeight(c.getWeight() - eta * t);
+                        connection.setNewWeight(connection.getWeight() - eta * t);
                     }
                 }
             }
@@ -201,9 +197,9 @@ public class NeuralNetwork
 
     public static void update()
     {
-        for (Connection c : weights)
+        for (Connection connection : weights)
         {
-            c.setWeight(c.getNewWeight());
+            connection.setWeight(connection.getNewWeight());
         }
     }
 
