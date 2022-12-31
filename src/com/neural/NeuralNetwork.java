@@ -10,6 +10,7 @@ public class NeuralNetwork
     private static int hiddenNeurons = 2;
     private static int outputNeurons = 2;
     private static List<Float> inputArray = new ArrayList<>();
+    private static List<Float> outputArray = new ArrayList<>();
     private static List<Neuron> neurons = new ArrayList<>();
     private static List<Connection> weights = new ArrayList<>();
     private static int layer = 1;
@@ -20,6 +21,9 @@ public class NeuralNetwork
     {
         inputArray.add(0.05f);
         inputArray.add(0.10f);
+
+        outputArray.add(0.01f);
+        outputArray.add(0.99f);
 
         createNeurons();
         createConnections();
@@ -58,7 +62,7 @@ public class NeuralNetwork
         layer++;
         for (int i = 0; i < outputNeurons; i++)
         {
-            neurons.add(new Neuron(new OutputWrap(0), null, layer, biasArray[1]));
+            neurons.add(new Neuron(new OutputWrap(0), outputArray.get(i), layer, biasArray[1]));
         }
     }
 
@@ -86,7 +90,6 @@ public class NeuralNetwork
 
     public static void setNeurons()
     {
-        int i = 0;
         for (Neuron neuron : neurons)
         {
             if (neuron.getLayer() != 0)
@@ -100,21 +103,6 @@ public class NeuralNetwork
                     }
                 }
                 neuron.setConnections(connections);
-            }
-
-            if (neuron.getLayer() == layer)
-            {
-                switch (i)
-                {
-                    case 0:
-                        neuron.setExpectedOut(0.01f);
-                        i++;
-                        break;
-                    case 1:
-                        neuron.setExpectedOut(0.99f);
-                        i++;
-                        break;
-                }
             }
         }
     }
@@ -207,7 +195,7 @@ public class NeuralNetwork
     {
         for (Neuron neuron : neurons)
             if (neuron.getLayer() == layer)
-                System.out.println(neuron.getOutput().getOutput());
+                System.out.println("Test: " + neuron.getOutput().getOutput());
 
         neurons.get(0).getOutput().setOutput(7.15f);
         neurons.get(1).getOutput().setOutput(8.10f);
@@ -218,6 +206,6 @@ public class NeuralNetwork
 
         for (Neuron neuron : neurons)
             if (neuron.getLayer() == layer)
-                System.out.println(neuron.getOutput().getOutput());
+                System.out.println("Test 2: " + neuron.getOutput().getOutput());
     }
 }
