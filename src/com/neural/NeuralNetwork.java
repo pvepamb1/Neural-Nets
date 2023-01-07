@@ -193,9 +193,11 @@ public class NeuralNetwork
 
     public static void test()
     {
+        System.out.println("After training..");
+
         for (Neuron neuron : neurons)
             if (neuron.getLayer() == layer)
-                System.out.println("Test: " + neuron.getOutput().getOutput());
+                System.out.println("Output: " + neuron.getOutput().getOutput());
 
         neurons.get(0).getOutput().setOutput(7.15f);
         neurons.get(1).getOutput().setOutput(8.10f);
@@ -204,8 +206,10 @@ public class NeuralNetwork
             if (neuron.getLayer() != 0)
                 calculate(neuron);
 
+        System.out.println("With new inputs in trained model");
         for (Neuron neuron : neurons)
             if (neuron.getLayer() == layer)
-                System.out.println("Test 2: " + neuron.getOutput().getOutput());
+                System.out.println("Output: " + neuron.getOutput().getOutput());
+        error();
     }
 }
