@@ -9,6 +9,11 @@ public class NeuralNetwork
     private final Strategy strategy;
     private static final Strategies defaultStrategy = Strategies.LOGISTIC_REGRESSION;
 
+    private double previousError = Integer.MAX_VALUE;
+    private double minError = Integer.MAX_VALUE;
+    private double errorRiseFromPreviousCount = 0;
+    private double errorRiseFromMinCount = 0;
+
     public NeuralNetwork(int... layers)
     {
         this(StrategyFactory.getStrategy(defaultStrategy), layers);
@@ -30,6 +35,9 @@ public class NeuralNetwork
             calculateError();
             backwardPass(learningRate);
         }
+
+        System.out.println("Error rose " + errorRiseFromPreviousCount + " times from prior error values");
+        System.out.println("Error rose " + errorRiseFromMinCount + " times from minimum error");
     }
 
     private void forwardPass()
@@ -39,7 +47,23 @@ public class NeuralNetwork
 
     private void calculateError()
     {
-        strategy.calculateError();
+        double currentError = strategy.calculateError();
+
+        if(currentError > previousError)
+        {
+            errorRiseFromPreviousCount++;
+        }
+
+        if(currentError > minError)
+        {
+            errorRiseFromMinCount++;
+        }
+        else
+        {
+            minError = currentError;
+        }
+
+        previousError = currentError;
     }
 
     private void backwardPass(double learningRate)

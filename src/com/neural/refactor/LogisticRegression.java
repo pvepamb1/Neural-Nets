@@ -56,7 +56,7 @@ public class LogisticRegression implements Strategy
     }
 
     @Override
-    public void calculateError()
+    public double calculateError()
     {
         double totalError = 0;
         for (int i = 0; i < outputLayer.length; i++)
@@ -64,53 +64,20 @@ public class LogisticRegression implements Strategy
             totalError += 0.5 * (Math.pow(targetOutputs[i] - neuralNetwork[neuralNetwork.length - 1][i], 2));
         }
         System.out.println("Total error: " + totalError);
+
+        return totalError;
     }
 
     @Override
     public void backwardPass(double learningRate)
     {
-        //calculateNewWeightsForOutputLayer(learningRate);
-        calculateWeightsForOutputLayer(learningRate);
+        calculateNewWeightsForOutputLayer(learningRate);
         calculateNewWeightsForHiddenLayers(learningRate);
         updateWeights();
-
     }
-
-    private void calculateNewWeightsForOutputLayer(double learningRate)
-    {
-        for(int i=0; i<outputLayer.length; i++)
-        {
-            double output = neuralNetwork[neuralNetwork.length - 1][i];
-            double totalErrorChangeForOutput = output - targetOutputs[i];
-            double outputChangeForNetInputs = output*(1 - output);
-            double[] previousWeightLayer = neuralNetwork[neuralNetwork.length - 3];
-            double[] previousInputLayer = neuralNetwork[neuralNetwork.length - 4];
-            int weightArrayOffset = previousInputLayer.length;
-            for (int j = i * weightArrayOffset; j < previousInputLayer.length + i * weightArrayOffset; j++)
-            {
-                double netInputChangeForWeight = previousInputLayer[i]; // this is wrong. value should be the previous input value connected to (j)
-                double totalErrorChangeForWeight = totalErrorChangeForOutput * outputChangeForNetInputs
-                        * netInputChangeForWeight;
-                newWeights[newWeights.length - 1][j] = previousWeightLayer[j] - learningRate * totalErrorChangeForWeight;
-            }
-        }
-    }
-
-    /*private void calculateNewWeightsForHiddenLayers(double learningRate)
-    {
-        // todo: add base cond to check if layer is output layer
-        for (int i=neuralNetwork.length-3; i>=0; i-=3) // for every weight layer but last
-        {
-            for (int j = 0; j < neuralNetwork[i].length; j++) // for every weight
-            {
-                newWeights[(i-1)/3][j] = neuralNetwork[i][j] - calculateNewWeightForWeight(i, j) * learningRate;
-            }
-        }
-    }*/
 
     private void calculateNewWeightsForHiddenLayers(double learningRate)
     {
-        // todo: add base cond to check if layer is output layer
         for (int i=neuralNetwork.length-6; i>=0; i-=3) // for every weight layer but last
         {
             for (int j = 0; j < neuralNetwork[i].length; j++) // for every weight
@@ -125,61 +92,6 @@ public class LogisticRegression implements Strategy
         }
     }
 
-    /*private double calculateNewWeightForWeight(int col, int row)
-    {
-        // calc neuron's effect
-        int previousInputLayerLength = neuralNetwork[col-1].length;
-        double previousLayerNeuron = neuralNetwork[col-1][row % previousInputLayerLength];
-        double nextLayerNeuron = neuralNetwork[col+2][row / previousInputLayerLength];
-        double outputChangeForNetInputs = nextLayerNeuron*(1 - nextLayerNeuron);
-        if(col>=neuralNetwork.length-3)
-        {
-            // output layer
-            double totalErrorChangeForOutput = nextLayerNeuron - targetOutputs[row / previousInputLayerLength];
-            return totalErrorChangeForOutput * outputChangeForNetInputs * previousLayerNeuron;
-        }
-        int nextHiddenLayerLength = neuralNetwork[col+5].length;
-        // calc collective effect of all weights from neuron
-        double weightsSum = 0;
-        for (int k=row; k<neuralNetwork[col+3].length; k+=nextHiddenLayerLength)
-        {
-            weightsSum += calculateNewWeightForWeight(col+3, k);
-        }
-        return previousLayerNeuron * outputChangeForNetInputs * weightsSum;
-    }*/
-
-    /*private double calculateNewWeightForWeight(int col, int row)
-    {
-        // calc neuron's effect
-        int previousInputLayerLength = neuralNetwork[col-1].length;
-        double previousLayerNeuron = neuralNetwork[col-1][row % previousInputLayerLength];
-
-        return previousLayerNeuron * calculateNeuronContributionForWeight(col, row);
-    }
-
-    private double calculateNeuronContributionForWeight(int col, int row)
-    {
-        // calc neuron's effect
-        int previousInputLayerLength = neuralNetwork[col-1].length;
-        double nextLayerNeuron = neuralNetwork[col+2][row / previousInputLayerLength];
-        double outputChangeForNetInputs = nextLayerNeuron * (1 - nextLayerNeuron);
-
-        if(col >= neuralNetwork.length-3)
-        {
-            // output layer
-            double totalErrorChangeForOutput = nextLayerNeuron - targetOutputs[row / previousInputLayerLength];
-            return totalErrorChangeForOutput * outputChangeForNetInputs;
-        }
-
-        // calc collective effect of all weights from neuron
-        double weightsSum = 0;
-        for (int i=0; i*previousInputLayerLength < neuralNetwork[col+3].length; i++)
-        {
-            weightsSum += calculateNeuronContributionForWeight(col+3, row / previousInputLayerLength + i * previousInputLayerLength) * neuralNetwork[col+3][row / previousInputLayerLength + i * previousInputLayerLength];
-        }
-        return weightsSum * outputChangeForNetInputs;
-    }*/
-
     private double calculateNeuronContribution(int col, int row)
     {
         if(col == neuralNetwork.length - 1)
@@ -189,7 +101,6 @@ public class LogisticRegression implements Strategy
 
         double[] nextLayer = neuralNetwork[col + 3];
         double currentNeuron = neuralNetwork[col][row];
-        //double nextLayerNeuron = nextLayer[i];
         double outputChangeForNetInputs = currentNeuron * (1 - currentNeuron);
         double totalContribution = 0;
         for (int i = 0; i < nextLayer.length; i++)
@@ -201,7 +112,7 @@ public class LogisticRegression implements Strategy
         return totalContribution * outputChangeForNetInputs;
     }
 
-    private void calculateWeightsForOutputLayer(double learningRate)
+    private void calculateNewWeightsForOutputLayer(double learningRate)
     {
         double[] finalWeightLayer = neuralNetwork[neuralNetwork.length - 3];
         double[] previousInputLayer = neuralNetwork[neuralNetwork.length - 4];
@@ -278,6 +189,5 @@ public class LogisticRegression implements Strategy
         {
             neuralNetwork[i * 3 + 1] = newWeights[i];
         }
-        //System.arraycopy(newWeights, 0, weights, 0, newWeights.length);
     }
 }
