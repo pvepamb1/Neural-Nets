@@ -52,8 +52,10 @@ public class Layers
         initializeInputLayer(noOfInputs);
         initializeHiddenLayers(noOfHiddenLayers);
         initializeWeights(noOfWeightLayers);
+        initializeNewWeights(noOfWeightLayers);
         initializeBiases(noOfBiasLayers);
         initializeOutputLayer(noOfOutputs);
+        initializeTargetOutputLayer(noOfOutputs);
     }
 
     private void initializeInputLayer(int noOfInputs)
@@ -79,6 +81,15 @@ public class Layers
         }
     }
 
+    private void initializeNewWeights(int noOfWeightLayers)
+    {
+        newWeights = new double[noOfWeightLayers][];
+        for (int i = 0; i < noOfWeightLayers; i++)
+        {
+            newWeights[i] = new double[layers[i] * layers[i + 1]];
+        }
+    }
+
     private void initializeBiases(int noOfBiasLayers)
     {
         biases = new double[noOfBiasLayers][];
@@ -98,7 +109,12 @@ public class Layers
         outputLayer = new double[noOfOutputs];
     }
 
-    private void assembleLayers()
+    private void initializeTargetOutputLayer(int noOfOutputs)
+    {
+        targetOutputs = new double[noOfOutputs];
+    }
+
+    public void assembleLayers()
     {
         neuralNetwork[0] = inputLayer;
 

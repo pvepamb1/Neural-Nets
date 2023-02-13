@@ -55,30 +55,6 @@ public class LogisticRegression implements Strategy
         }
     }
 
-    // trying to avoid using the neural network object for computation
-    private void calculateOutputForHiddenLayer()
-    {
-        for (int i=0; i<hiddenLayers.length; i++)
-        {
-            for (int j = 0; j < hiddenLayers[i].length; j++)
-            {
-                double[] previousInputLayer = i!=0 ? hiddenLayers[i-1] : inputLayer;
-                double totalNetInput = 0;
-                for (int k = 0; k < weights[i].length; k++)
-                {
-                    totalNetInput += previousInputLayer[j] * weights[i][k] + biases[i][j];
-                }
-                totalNetInput = 1 / (1 + Math.exp(-totalNetInput));
-                hiddenLayers[i][j] = totalNetInput;
-            }
-        }
-    }
-
-    private void calculateOutputForOutputLayer()
-    {
-
-    }
-
     @Override
     public void calculateError()
     {
@@ -87,22 +63,21 @@ public class LogisticRegression implements Strategy
         {
             totalError += 0.5 * (Math.pow(targetOutputs[i] - neuralNetwork[neuralNetwork.length - 1][i], 2));
         }
-        //System.out.println("Total error: " + totalError);
+        System.out.println("Total error: " + totalError);
     }
 
     @Override
     public void backwardPass(double learningRate)
     {
-        newWeights = new double[weights.length][];
-        calculateNewWeightsForOutputLayer(learningRate);
-        calculateNewWeightsForHiddenLayers();
+        //calculateNewWeightsForOutputLayer(learningRate);
+        calculateWeightsForOutputLayer(learningRate);
+        calculateNewWeightsForHiddenLayers(learningRate);
+        updateWeights();
+
     }
 
     private void calculateNewWeightsForOutputLayer(double learningRate)
     {
-        // initialize the last layer with length equalling weights' last layer
-        // Todo: Move initialization to its own method further up like other layers?
-        newWeights[newWeights.length -1] = new double[weights[weights.length - 1].length];
         for(int i=0; i<outputLayer.length; i++)
         {
             double output = neuralNetwork[neuralNetwork.length - 1][i];
@@ -121,14 +96,188 @@ public class LogisticRegression implements Strategy
         }
     }
 
-    private void calculateNewWeightsForHiddenLayers()
+    /*private void calculateNewWeightsForHiddenLayers(double learningRate)
     {
-        for (int i=neuralNetwork.length-4; i>=0; i-=3)
+        // todo: add base cond to check if layer is output layer
+        for (int i=neuralNetwork.length-3; i>=0; i-=3) // for every weight layer but last
         {
-            for (int j = 0; j < neuralNetwork[i].length; j++)
+            for (int j = 0; j < neuralNetwork[i].length; j++) // for every weight
             {
-
+                newWeights[(i-1)/3][j] = neuralNetwork[i][j] - calculateNewWeightForWeight(i, j) * learningRate;
             }
         }
+    }*/
+
+    private void calculateNewWeightsForHiddenLayers(double learningRate)
+    {
+        // todo: add base cond to check if layer is output layer
+        for (int i=neuralNetwork.length-6; i>=0; i-=3) // for every weight layer but last
+        {
+            for (int j = 0; j < neuralNetwork[i].length; j++) // for every weight
+            {
+                double currentWeight = neuralNetwork[i][j];
+                int[] destNeuronIndex = getDestNeuronIndexForWeight(i, j);
+                int destNeuronIndexCol = destNeuronIndex[0];
+                int destNeuronIndexRow = destNeuronIndex[1];
+                double srcNeuron = getSrcNeuronValueForWeight(i, j);
+                newWeights[(i-1)/3][j] = currentWeight - calculateNeuronContribution(destNeuronIndexCol, destNeuronIndexRow) * srcNeuron * learningRate;
+            }
+        }
+    }
+
+    /*private double calculateNewWeightForWeight(int col, int row)
+    {
+        // calc neuron's effect
+        int previousInputLayerLength = neuralNetwork[col-1].length;
+        double previousLayerNeuron = neuralNetwork[col-1][row % previousInputLayerLength];
+        double nextLayerNeuron = neuralNetwork[col+2][row / previousInputLayerLength];
+        double outputChangeForNetInputs = nextLayerNeuron*(1 - nextLayerNeuron);
+        if(col>=neuralNetwork.length-3)
+        {
+            // output layer
+            double totalErrorChangeForOutput = nextLayerNeuron - targetOutputs[row / previousInputLayerLength];
+            return totalErrorChangeForOutput * outputChangeForNetInputs * previousLayerNeuron;
+        }
+        int nextHiddenLayerLength = neuralNetwork[col+5].length;
+        // calc collective effect of all weights from neuron
+        double weightsSum = 0;
+        for (int k=row; k<neuralNetwork[col+3].length; k+=nextHiddenLayerLength)
+        {
+            weightsSum += calculateNewWeightForWeight(col+3, k);
+        }
+        return previousLayerNeuron * outputChangeForNetInputs * weightsSum;
+    }*/
+
+    /*private double calculateNewWeightForWeight(int col, int row)
+    {
+        // calc neuron's effect
+        int previousInputLayerLength = neuralNetwork[col-1].length;
+        double previousLayerNeuron = neuralNetwork[col-1][row % previousInputLayerLength];
+
+        return previousLayerNeuron * calculateNeuronContributionForWeight(col, row);
+    }
+
+    private double calculateNeuronContributionForWeight(int col, int row)
+    {
+        // calc neuron's effect
+        int previousInputLayerLength = neuralNetwork[col-1].length;
+        double nextLayerNeuron = neuralNetwork[col+2][row / previousInputLayerLength];
+        double outputChangeForNetInputs = nextLayerNeuron * (1 - nextLayerNeuron);
+
+        if(col >= neuralNetwork.length-3)
+        {
+            // output layer
+            double totalErrorChangeForOutput = nextLayerNeuron - targetOutputs[row / previousInputLayerLength];
+            return totalErrorChangeForOutput * outputChangeForNetInputs;
+        }
+
+        // calc collective effect of all weights from neuron
+        double weightsSum = 0;
+        for (int i=0; i*previousInputLayerLength < neuralNetwork[col+3].length; i++)
+        {
+            weightsSum += calculateNeuronContributionForWeight(col+3, row / previousInputLayerLength + i * previousInputLayerLength) * neuralNetwork[col+3][row / previousInputLayerLength + i * previousInputLayerLength];
+        }
+        return weightsSum * outputChangeForNetInputs;
+    }*/
+
+    private double calculateNeuronContribution(int col, int row)
+    {
+        if(col == neuralNetwork.length - 1)
+        {
+           return calculateOutputLayerContribution(row);
+        }
+
+        double[] nextLayer = neuralNetwork[col + 3];
+        double currentNeuron = neuralNetwork[col][row];
+        //double nextLayerNeuron = nextLayer[i];
+        double outputChangeForNetInputs = currentNeuron * (1 - currentNeuron);
+        double totalContribution = 0;
+        for (int i = 0; i < nextLayer.length; i++)
+        {
+            double neuronContribution = calculateNeuronContribution(col + 3, i)
+                    * getWeightValue(col, row, col + 3, i);
+            totalContribution += neuronContribution;
+        }
+        return totalContribution * outputChangeForNetInputs;
+    }
+
+    private void calculateWeightsForOutputLayer(double learningRate)
+    {
+        double[] finalWeightLayer = neuralNetwork[neuralNetwork.length - 3];
+        double[] previousInputLayer = neuralNetwork[neuralNetwork.length - 4];
+        for (int row = 0; row < finalWeightLayer.length; row++)
+        {
+            double weight = finalWeightLayer[row];
+            double outputNeuronContribution = calculateOutputLayerContribution(row / previousInputLayer.length);
+            double previousLayerNeuron = neuralNetwork[neuralNetwork.length - 4][row % previousInputLayer.length];
+            double totalContribution = outputNeuronContribution * previousLayerNeuron;
+            double newWeight = weight - totalContribution * learningRate;
+            newWeights[newWeights.length - 1][row] = newWeight;
+        }
+    }
+
+    private double calculateOutputLayerContribution(int neuronIndexRow)
+    {
+        double neuron = outputLayer[neuronIndexRow];
+        double outputChangeForNetInputs = neuron * (1 - neuron);
+        double totalErrorChangeForOutput = neuron - targetOutputs[neuronIndexRow];
+        return totalErrorChangeForOutput * outputChangeForNetInputs;
+    }
+
+    private double getWeightValue(int srcNeuronIndexCol, int srcNeuronIndexRow, int destNeuronIndexCol, int destNeuronIndexRow)
+    {
+        int[] weightIndex = getWeightIndex(srcNeuronIndexCol, srcNeuronIndexRow, destNeuronIndexCol, destNeuronIndexRow);
+        int weightIndexCol = weightIndex[0];
+        int weightIndexRow = weightIndex[1];
+        return neuralNetwork[weightIndexCol][weightIndexRow];
+    }
+
+    private int[] getWeightIndex(int srcNeuronIndexCol, int srcNeuronIndexRow, int destNeuronIndexCol, int destNeuronIndexRow)
+    {
+        int weightIndexCol = Math.min(srcNeuronIndexCol, destNeuronIndexCol) + 1;
+        int weightIndexRow = srcNeuronIndexRow + destNeuronIndexRow * neuralNetwork[weightIndexCol - 1].length;
+
+        return new int[]{weightIndexCol, weightIndexRow};
+    }
+
+    private int[] getDestNeuronIndexForWeight(int weightIndexCol, int weightIndexRow)
+    {
+        int previousInputLayerLength = neuralNetwork[weightIndexCol-1].length;
+        int destNeuronIndexCol = weightIndexCol + 2;
+        int destNeuronIndexRow = weightIndexRow / previousInputLayerLength;
+        return new int[]{destNeuronIndexCol, destNeuronIndexRow};
+    }
+
+    private double getDestNeuronValueForWeight(int weightIndexCol, int weightIndexRow)
+    {
+        int[] destNeuronIndexForWeight = getDestNeuronIndexForWeight(weightIndexCol, weightIndexRow);
+        int destNeuronIndexCol = destNeuronIndexForWeight[0];
+        int destNeuronIndexRow = destNeuronIndexForWeight[1];
+        return neuralNetwork[destNeuronIndexCol][destNeuronIndexRow];
+    }
+
+    private int[] getSrcNeuronIndexForWeight(int weightIndexCol, int weightIndexRow)
+    {
+        int previousInputLayerLength = neuralNetwork[weightIndexCol-1].length;
+        int srcNeuronIndexCol = weightIndexCol - 1;
+        int srcNeuronIndexRow = weightIndexRow % previousInputLayerLength;
+        return new int[]{srcNeuronIndexCol, srcNeuronIndexRow};
+    }
+
+    private double getSrcNeuronValueForWeight(int weightIndexCol, int weightIndexRow)
+    {
+        int[] srcNeuronIndexForWeight = getSrcNeuronIndexForWeight(weightIndexCol, weightIndexRow);
+        int srcNeuronIndexCol = srcNeuronIndexForWeight[0];
+        int srcNeuronIndexRow = srcNeuronIndexForWeight[1];
+        return neuralNetwork[srcNeuronIndexCol][srcNeuronIndexRow];
+    }
+
+    private void updateWeights()
+    {
+        for (int i = 0; i < newWeights.length; i++)
+        {
+            neuralNetwork[i * 3 + 1] = newWeights[i];
+        }
+        //System.arraycopy(newWeights, 0, weights, 0, newWeights.length);
     }
 }

@@ -25,6 +25,7 @@ public class NeuralNetwork
     {
         for (int i=0; i<epochs; i++)
         {
+            // Todo: set input and output
             forwardPass();
             calculateError();
             backwardPass(learningRate);
@@ -48,21 +49,26 @@ public class NeuralNetwork
 
     public void setInputs(double[] inputs)
     {
-        layers.setInputs(inputs);
+        System.arraycopy(inputs, 0, layers.getInputLayer(), 0, inputs.length);
     }
 
     public void setWeights(double[][] weights)
     {
-        layers.setWeights(weights);
+        System.arraycopy(weights, 0, layers.getWeights(), 0, weights.length);
     }
 
     public void setBiases(double[][] biases)
     {
-        layers.setBiases(biases);
+        System.arraycopy(biases, 0, layers.getBiases(), 0, biases.length);
     }
 
     public void setTargetOutputs(double[] outputs)
     {
-        layers.setTargetOutputs(outputs);
+        System.arraycopy(outputs, 0, layers.getTargetOutputs(), 0, outputs.length);
+    }
+
+    public void assembleLayers()
+    {
+        layers.assembleLayers();
     }
 }
