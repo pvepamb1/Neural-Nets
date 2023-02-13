@@ -1,4 +1,4 @@
-package com.neural.refactor;
+package com.neural;
 
 public class LogisticRegression implements Strategy
 {

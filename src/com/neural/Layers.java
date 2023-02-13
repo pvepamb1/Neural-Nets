@@ -1,4 +1,4 @@
-package com.neural.refactor;
+package com.neural;
 
 import java.util.Random;
 
