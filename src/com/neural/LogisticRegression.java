@@ -10,6 +10,7 @@ public class LogisticRegression implements Strategy
     private double[][] weights;
     private double[][] newWeights;
     private double[][] biases;
+    private double[][] newBiases;
     // Todo: Nice to have but necessary? Might be easier to use layers directly for calculations
     private double[][] neuralNetwork;
 
@@ -24,6 +25,7 @@ public class LogisticRegression implements Strategy
         weights = layersObj.getWeights();
         newWeights = layersObj.getNewWeights();
         biases = layersObj.getBiases();
+        newBiases = layersObj.getNewBiases();
         neuralNetwork = layersObj.getNeuralNetwork();
     }
 
@@ -73,7 +75,9 @@ public class LogisticRegression implements Strategy
     {
         calculateNewWeightsForOutputLayer(learningRate);
         calculateNewWeightsForHiddenLayers(learningRate);
-        updateWeights();
+        calculateNewBiasesForOutputLayer(learningRate);
+        calculateNewBiasesForHiddenLayers(learningRate);
+        updateWeightsAndBiases();
     }
 
     private void calculateNewWeightsForHiddenLayers(double learningRate)
@@ -87,12 +91,14 @@ public class LogisticRegression implements Strategy
                 int destNeuronIndexCol = destNeuronIndex[0];
                 int destNeuronIndexRow = destNeuronIndex[1];
                 double srcNeuron = getSrcNeuronValueForWeight(i, j);
-                newWeights[(i-1)/3][j] = currentWeight - calculateNeuronContribution(destNeuronIndexCol, destNeuronIndexRow) * srcNeuron * learningRate;
+                newWeights[(i-1)/3][j] = currentWeight
+                        - calculateNeuronContribution(destNeuronIndexCol, destNeuronIndexRow, false)
+                        * srcNeuron * learningRate;
             }
         }
     }
 
-    private double calculateNeuronContribution(int col, int row)
+    private double calculateNeuronContribution(int col, int row, boolean isBias)
     {
         if(col == neuralNetwork.length - 1)
         {
@@ -105,9 +111,14 @@ public class LogisticRegression implements Strategy
         double totalContribution = 0;
         for (int i = 0; i < nextLayer.length; i++)
         {
-            double neuronContribution = calculateNeuronContribution(col + 3, i)
-                    * getWeightValue(col, row, col + 3, i);
-            totalContribution += neuronContribution;
+            double netInput = calculateNeuronContribution(col + 3, i, isBias);
+
+            // the partial derivative of bias wrt net input is 1 and so no need to multiply anything
+            if (!isBias)
+            {
+                netInput *= getWeightValue(col, row, col + 3, i);
+            }
+            totalContribution += netInput;
         }
         return totalContribution * outputChangeForNetInputs;
     }
@@ -124,6 +135,30 @@ public class LogisticRegression implements Strategy
             double totalContribution = outputNeuronContribution * previousLayerNeuron;
             double newWeight = weight - totalContribution * learningRate;
             newWeights[newWeights.length - 1][row] = newWeight;
+        }
+    }
+
+    private void calculateNewBiasesForHiddenLayers(double learningRate)
+    {
+        for (int i=neuralNetwork.length-5; i>=0; i-=3) // for every bias layer but last
+        {
+            for (int j = 0; j < neuralNetwork[i].length; j++) // for every bias
+            {
+                double currentBias = neuralNetwork[i][j];
+                newBiases[(i-2)/3][j] = currentBias - calculateNeuronContribution(i+1, j, true) * learningRate;
+            }
+        }
+    }
+
+    private void calculateNewBiasesForOutputLayer(double learningRate)
+    {
+        double[] finalBiasLayer = neuralNetwork[neuralNetwork.length - 2];
+        for (int row = 0; row < finalBiasLayer.length; row++)
+        {
+            double bias = finalBiasLayer[row];
+            double totalContribution = calculateOutputLayerContribution(row);
+            double newBias = bias - totalContribution * learningRate;
+            newBiases[newBiases.length - 1][row] = newBias;
         }
     }
 
@@ -183,11 +218,15 @@ public class LogisticRegression implements Strategy
         return neuralNetwork[srcNeuronIndexCol][srcNeuronIndexRow];
     }
 
-    private void updateWeights()
+    private void updateWeightsAndBiases()
     {
         for (int i = 0; i < newWeights.length; i++)
         {
             neuralNetwork[i * 3 + 1] = newWeights[i];
+        }
+        for (int i = 0; i < newBiases.length; i++)
+        {
+            neuralNetwork[i * 3 + 2] = newBiases[i];
         }
     }
 }

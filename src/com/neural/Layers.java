@@ -12,6 +12,7 @@ public class Layers
     private double[][] weights;
     private double[][] newWeights;
     private double[][] biases;
+    private double[][] newBiases;
     private double[][] neuralNetwork;
 
     public Layers(int... layers)
@@ -54,6 +55,7 @@ public class Layers
         initializeWeights(noOfWeightLayers);
         initializeNewWeights(noOfWeightLayers);
         initializeBiases(noOfBiasLayers);
+        initializeNewBiases(noOfBiasLayers);
         initializeOutputLayer(noOfOutputs);
         initializeTargetOutputLayer(noOfOutputs);
     }
@@ -96,6 +98,15 @@ public class Layers
         for (int i = 0; i < noOfBiasLayers; i++)
         {
             biases[i] = getRandomDoubles(layers[i + 1]);
+        }
+    }
+
+    private void initializeNewBiases(int noOfBiasLayers)
+    {
+        newBiases = new double[noOfBiasLayers][];
+        for (int i = 0; i < noOfBiasLayers; i++)
+        {
+            newBiases[i] = new double[layers[i + 1]];
         }
     }
 
@@ -239,6 +250,11 @@ public class Layers
     public double[][] getNewWeights()
     {
         return newWeights;
+    }
+
+    public double[][] getNewBiases()
+    {
+        return newBiases;
     }
 
     public double[][] getNeuralNetwork()
