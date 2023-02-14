@@ -1,223 +1,98 @@
 package com.neural;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
-
-
+/**
+ * Based on @see <a href="https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/">Backpropagation</a>
+ */
 public class NeuralNetwork
 {
-    private static int hiddenNeurons = 2;
-    private static int outputNeurons = 2;
-    private static List<Float> inputArray = new ArrayList<>();
-    private static List<Neuron> neurons = new ArrayList<>();
-    private static List<Connection> weights = new ArrayList<>();
-    private static int layer = 1;
-    private static float eta = 0.5f;
-    private static float[] biasArray = { 0.35f, 0.60f };
+    private final Layers layers;
+    private final Strategy strategy;
+    private static final Strategies defaultStrategy = Strategies.LOGISTIC_REGRESSION;
 
-    public static void main(String[] args)
+    private double previousError = Integer.MAX_VALUE;
+    private double minError = Integer.MAX_VALUE;
+    private double errorRiseFromPreviousCount = 0;
+    private double errorRiseFromMinCount = 0;
+
+    public NeuralNetwork(int... layers)
     {
-        inputArray.add(0.05f);
-        inputArray.add(0.10f);
-
-        createNeurons();
-        createConnections();
-        setNeurons();
-
-        System.out.println("Iterations?");
-        Scanner scanner = new Scanner(System.in);
-        int iterationCount = scanner.nextInt();
-        scanner.close();
-
-        for (int i = 0; i <= iterationCount; i++)
-        {
-            for (Neuron neuron : neurons)
-            {
-                if (neuron.getLayer() != 0)
-                    calculate(neuron);
-            }
-            backPropagate();
-            update();
-        }
-
-        error();
-        test();
+        this(StrategyFactory.getStrategy(defaultStrategy), layers);
     }
 
-    public static void createNeurons()
+    public NeuralNetwork(Strategy strategy, int... layers)
     {
-        for (float f : inputArray)
-        {
-            neurons.add(new Neuron(new OutputWrap(f), null, 0, 0.0f));
-        }
-        for (int i = 0; i < hiddenNeurons; i++)
-        {
-            neurons.add(new Neuron(new OutputWrap(0), null, layer, biasArray[0]));
-        }
-        layer++;
-        for (int i = 0; i < outputNeurons; i++)
-        {
-            neurons.add(new Neuron(new OutputWrap(0), null, layer, biasArray[1]));
-        }
+        this.strategy = strategy;
+        this.layers = new Layers(layers);
+        strategy.setLayers(this.layers);
     }
 
-    private static void createConnections()
+    public void train(int epochs, double learningRate)
     {
-        int id = 0;
-        for (int i = 0; i < layer; i++)
+        for (int i=0; i<epochs; i++)
         {
-            for (Neuron inputNeuron : neurons)
-            {
-                if (inputNeuron.getLayer() == i)
-                {
-                    for (Neuron outputNeuron : neurons)
-                    {
-                        if (outputNeuron.getLayer() == i + 1)
-                        {
-                            weights.add(new Connection(inputNeuron, outputNeuron, (float) Math.random(), 0.0f, id, i));
-                            id++;
-                        }
-                    }
-                }
-            }
+            // Todo: set input and output
+            forwardPass();
+            calculateError();
+            backwardPass(learningRate);
         }
+
+        System.out.println("Error rose " + errorRiseFromPreviousCount + " times from prior error values");
+        System.out.println("Error rose " + errorRiseFromMinCount + " times from minimum error");
     }
 
-    public static void setNeurons()
+    private void forwardPass()
     {
-        int i = 0;
-        for (Neuron neuron : neurons)
-        {
-            if (neuron.getLayer() != 0)
-            {
-                ArrayList<Connection> connections = new ArrayList<>();
-                for (Connection connection : NeuralNetwork.weights)
-                {
-                    if (connection.getOutput() == neuron)
-                    {
-                        connections.add(connection);
-                    }
-                }
-                neuron.setConnections(connections);
-            }
-
-            if (neuron.getLayer() == layer)
-            {
-                switch (i)
-                {
-                    case 0:
-                        neuron.setExpectedOut(0.01f);
-                        i++;
-                        break;
-                    case 1:
-                        neuron.setExpectedOut(0.99f);
-                        i++;
-                        break;
-                }
-            }
-        }
+        strategy.forwardPass();
     }
 
-    public static void calculate(Neuron neuron)
+    private void calculateError()
     {
-        float total = 0;
-        for (int i = 0; i < neuron.getWeights().size(); i++)
+        double currentError = strategy.calculateError();
+
+        if(currentError > previousError)
         {
-            total += neuron.getWeights().get(i) * neuron.getInputs().get(i).getOutput();
+            errorRiseFromPreviousCount++;
         }
-        total += neuron.getBias();
-        total = (float) (1 / (1 + Math.exp(-total)));
-        neuron.getOutput().setOutput(total);
+
+        if(currentError > minError)
+        {
+            errorRiseFromMinCount++;
+        }
+        else
+        {
+            minError = currentError;
+        }
+
+        previousError = currentError;
     }
 
-    public static void error()
+    private void backwardPass(double learningRate)
     {
-        float totalError = 0.0f;
-        for (Neuron neuron : neurons)
-        {
-            if (neuron.getLayer() == layer)
-            {
-                totalError += (float) 1 / 2 * (Math.pow(neuron.getExpectedOut() - neuron.getOutput().getOutput(),
-                        2));
-            }
-        }
-        System.out.println("Total error: " + totalError);
+        strategy.backwardPass(learningRate);
     }
 
-    public static void backPropagate()
+    public void setInputs(double[] inputs)
     {
-
-        int temp = layer - 1;
-        while (temp >= 0)
-        {
-            for (Connection connection : weights)
-            {
-                if (connection.getLayer() == temp)
-                {
-                    if (temp == layer - 1)
-                    {
-                        float err = connection.getOutput().getOutput().getOutput() - connection.getOutput()
-                                .getExpectedOut();
-                        float err2 = connection.getOutput().getOutput().getOutput()
-                                * (1 - (connection.getOutput().getOutput().getOutput()));
-                        float totalErr = err * err2 * connection.getInput().getOutput().getOutput();
-                        connection.setNewWeight(connection.getWeight() - eta * totalErr);
-                    }
-                    else
-                    {
-                        float totalerr1 = 0.0f;
-                        Neuron neuron = connection.getOutput();
-                        for (Connection c2 : weights)
-                        {
-                            if (c2.getLayer() == temp + 1)
-                            {
-                                if (c2.getInput() == neuron)
-                                {
-                                    float err = c2.getOutput().getOutput().getOutput()
-                                            - c2.getOutput().getExpectedOut();
-                                    float err2 = c2.getOutput().getOutput().getOutput()
-                                            * (1 - (c2.getOutput().getOutput().getOutput()));
-                                    float totalErr = err * err2 * c2.getWeight();
-                                    totalerr1 += totalErr;
-                                }
-                            }
-                        }
-                        float t2 = connection.getOutput().getOutput().getOutput()
-                                * (1 - (connection.getOutput().getOutput().getOutput()));
-                        float t3 = connection.getInput().getOutput().getOutput();
-                        float t = totalerr1 * t2 * t3;
-                        connection.setNewWeight(connection.getWeight() - eta * t);
-                    }
-                }
-            }
-            temp--;
-        }
+        System.arraycopy(inputs, 0, layers.getInputLayer(), 0, inputs.length);
     }
 
-    public static void update()
+    public void setWeights(double[][] weights)
     {
-        for (Connection connection : weights)
-        {
-            connection.setWeight(connection.getNewWeight());
-        }
+        System.arraycopy(weights, 0, layers.getWeights(), 0, weights.length);
     }
 
-    public static void test()
+    public void setBiases(double[][] biases)
     {
-        for (Neuron neuron : neurons)
-            if (neuron.getLayer() == layer)
-                System.out.println(neuron.getOutput().getOutput());
+        System.arraycopy(biases, 0, layers.getBiases(), 0, biases.length);
+    }
 
-        neurons.get(0).getOutput().setOutput(7.15f);
-        neurons.get(1).getOutput().setOutput(8.10f);
+    public void setTargetOutputs(double[] outputs)
+    {
+        System.arraycopy(outputs, 0, layers.getTargetOutputs(), 0, outputs.length);
+    }
 
-        for (Neuron neuron : neurons)
-            if (neuron.getLayer() != 0)
-                calculate(neuron);
-
-        for (Neuron neuron : neurons)
-            if (neuron.getLayer() == layer)
-                System.out.println(neuron.getOutput().getOutput());
+    public void assembleLayers()
+    {
+        layers.assembleLayers();
     }
 }

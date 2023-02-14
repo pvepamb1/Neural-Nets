@@ -1,4 +1,4 @@
-package com.neural;
+package com.neural.mnist;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
