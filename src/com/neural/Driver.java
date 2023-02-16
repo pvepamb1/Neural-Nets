@@ -1,12 +1,14 @@
 package com.neural;
 
+import java.io.IOException;
+
 public class Driver
 {
-    public static void main(String[] args)
+    public static void main(String[] args) throws IOException
     {
-        NeuralNetwork neuralNetwork = new NeuralNetwork(2, 2, 2);
-        setTestData(neuralNetwork);
-        neuralNetwork.train(10000, 0.5f);
+        NeuralNetwork neuralNetwork = new NeuralNetwork("/Users/prasenna/Downloads/train-images.idx3-ubyte", "/Users/prasenna/Downloads/train-labels.idx1-ubyte", true, 16, 16);
+        //setTestData(neuralNetwork);
+        neuralNetwork.train(2, 0.01);
     }
 
     public static void setTestData(NeuralNetwork neuralNetwork)
