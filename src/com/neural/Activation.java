@@ -1,6 +1,6 @@
 package com.neural;
 
-public enum Strategies
+public enum Activation
 {
     LOGISTIC_REGRESSION
 }
