@@ -10,9 +10,9 @@ import java.io.IOException;
  */
 public class NeuralNetwork
 {
-    private Strategy strategy;
     private final Layers layers;
-    private static final Strategies defaultStrategy = Strategies.LOGISTIC_REGRESSION;
+    private final Strategy strategy;
+    private static final Activation defaultActivation = Activation.SIGMOID;
 
     private double previousError = Integer.MAX_VALUE;
     private double minError = Integer.MAX_VALUE;
@@ -23,7 +23,7 @@ public class NeuralNetwork
 
     public NeuralNetwork(int... layers)
     {
-        this(StrategyFactory.getStrategy(defaultStrategy), layers);
+        this(StrategyFactory.getStrategy(defaultActivation), layers);
     }
 
     public NeuralNetwork(Strategy strategy, int... layers)
@@ -76,7 +76,7 @@ public class NeuralNetwork
 
     private void calculateError()
     {
-        double currentError = strategy.calculateError();
+        double currentError = strategy.calculateCost();
 
         if(currentError > previousError)
         {
@@ -131,7 +131,7 @@ public class NeuralNetwork
         System.arraycopy(inputs, 0, layers.getInputLayer(), 0, inputs.length);
     }
 
-    public void setWeights(double[][] weights)
+    public void setWeights(double[][][] weights)
     {
         System.arraycopy(weights, 0, layers.getWeights(), 0, weights.length);
     }
