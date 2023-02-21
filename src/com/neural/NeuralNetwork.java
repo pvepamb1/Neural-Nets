@@ -7,7 +7,7 @@ public class NeuralNetwork
 {
     private final Layers layers;
     private final Strategy strategy;
-    private static final Activation defaultActivation = Activation.LOGISTIC_REGRESSION;
+    private static final Activation defaultActivation = Activation.SIGMOID;
 
     private double previousError = Integer.MAX_VALUE;
     private double minError = Integer.MAX_VALUE;
@@ -76,7 +76,7 @@ public class NeuralNetwork
         System.arraycopy(inputs, 0, layers.getInputLayer(), 0, inputs.length);
     }
 
-    public void setWeights(double[][] weights)
+    public void setWeights(double[][][] weights)
     {
         System.arraycopy(weights, 0, layers.getWeights(), 0, weights.length);
     }

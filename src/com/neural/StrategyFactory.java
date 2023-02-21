@@ -7,6 +7,6 @@ public class StrategyFactory
     // expand to a switch case as more strategies are added
     public static Strategy getStrategy(Activation activation)
     {
-        return new LogisticRegression();
+        return new Sigmoid();
     }
 }
