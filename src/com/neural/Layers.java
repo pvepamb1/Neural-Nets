@@ -9,10 +9,11 @@ public class Layers
     private double[] outputLayer;
     private double[] targetOutputs;
     private double[][] hiddenLayers;
-    private double[][] weights;
-    private double[][] newWeights;
+    private double[][][] weights;
+    private double[][][] weightGradients;
     private double[][] biases;
-    private double[][] newBiases;
+    private double[][] biasGradients;
+    private double[][] neuronContributions;
     private double[][] neuralNetwork;
 
     public Layers(int... layers)
@@ -45,6 +46,7 @@ public class Layers
         int noOfHiddenLayers = layers.length - 2;
         int noOfWeightLayers = noOfHiddenLayers + 1;
         int noOfBiasLayers = noOfHiddenLayers + 1;
+        int noOfNonInputLayers = noOfHiddenLayers + 1;
         int noOfOutputs = layers[layers.length - 1];
         int totalLayers = noOfHiddenLayers + noOfWeightLayers + noOfBiasLayers + 2;
 
@@ -53,11 +55,12 @@ public class Layers
         initializeInputLayer(noOfInputs);
         initializeHiddenLayers(noOfHiddenLayers);
         initializeWeights(noOfWeightLayers);
-        initializeNewWeights(noOfWeightLayers);
+        initializeWeightGradients(noOfWeightLayers);
         initializeBiases(noOfBiasLayers);
-        initializeNewBiases(noOfBiasLayers);
+        initializeBiasGradients(noOfBiasLayers);
         initializeOutputLayer(noOfOutputs);
         initializeTargetOutputLayer(noOfOutputs);
+        initializeNeuronContributions(noOfNonInputLayers);
     }
 
     private void initializeInputLayer(int noOfInputs)
@@ -76,19 +79,27 @@ public class Layers
 
     private void initializeWeights(int noOfWeightLayers)
     {
-        weights = new double[noOfWeightLayers][];
+        weights = new double[noOfWeightLayers][][];
         for (int i = 0; i < noOfWeightLayers; i++)
         {
-            weights[i] = getRandomDoubles((long) layers[i] * layers[i + 1]);
+            weights[i] = new double[layers[i+1]][];
+            for (int j = 0; j < layers[i+1]; j++)
+            {
+                weights[i][j] = getRandomDoubles(layers[i]);
+            }
         }
     }
 
-    private void initializeNewWeights(int noOfWeightLayers)
+    private void initializeWeightGradients(int noOfWeightLayers)
     {
-        newWeights = new double[noOfWeightLayers][];
+        weightGradients = new double[noOfWeightLayers][][];
         for (int i = 0; i < noOfWeightLayers; i++)
         {
-            newWeights[i] = new double[layers[i] * layers[i + 1]];
+            weightGradients[i] = new double[layers[i+1]][];
+            for (int j = 0; j < layers[i+1]; j++)
+            {
+                weightGradients[i][j] = new double[layers[i]];
+            }
         }
     }
 
@@ -101,12 +112,21 @@ public class Layers
         }
     }
 
-    private void initializeNewBiases(int noOfBiasLayers)
+    private void initializeBiasGradients(int noOfBiasLayers)
     {
-        newBiases = new double[noOfBiasLayers][];
+        biasGradients = new double[noOfBiasLayers][];
         for (int i = 0; i < noOfBiasLayers; i++)
         {
-            newBiases[i] = new double[layers[i + 1]];
+            biasGradients[i] = new double[layers[i + 1]];
+        }
+    }
+
+    private void initializeNeuronContributions(int noOfNonInputLayers)
+    {
+        neuronContributions = new double[noOfNonInputLayers][];
+        for (int i = 0; i < noOfNonInputLayers; i++)
+        {
+            neuronContributions[i] = new double[layers[i+1]];
         }
     }
 
@@ -127,12 +147,7 @@ public class Layers
 
     public void assembleLayers()
     {
-        neuralNetwork[0] = inputLayer;
-
-        for (int i = 0; i < weights.length; i++)
-        {
-            neuralNetwork[i * 3 + 1] = weights[i];
-        }
+        /*neuralNetwork[0] = inputLayer;
 
         for (int i = 0; i < biases.length; i++)
         {
@@ -144,7 +159,7 @@ public class Layers
             neuralNetwork[i * 3 + 3] = hiddenLayers[i];
         }
 
-        neuralNetwork[neuralNetwork.length - 1] = outputLayer;
+        neuralNetwork[neuralNetwork.length - 1] = outputLayer;*/
     }
 
     public double[] getInputLayer()
@@ -165,12 +180,12 @@ public class Layers
         }
     }
 
-    public double[][] getWeights()
+    public double[][][] getWeights()
     {
         return weights;
     }
 
-    public void setWeights(double[][] weights)
+    public void setWeights(double[][] weights) // Todo: needs to updated to 3d matrix as input
     {
         if (weights.length != this.weights.length)
         {
@@ -247,14 +262,19 @@ public class Layers
         return hiddenLayers;
     }
 
-    public double[][] getNewWeights()
+    public double[][][] getWeightGradients()
     {
-        return newWeights;
+        return weightGradients;
     }
 
-    public double[][] getNewBiases()
+    public double[][] getBiasGradients()
     {
-        return newBiases;
+        return biasGradients;
+    }
+
+    public double[][] getNeuronContributions()
+    {
+        return neuronContributions;
     }
 
     public double[][] getNeuralNetwork()
