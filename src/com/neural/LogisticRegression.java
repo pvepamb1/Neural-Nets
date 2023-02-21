@@ -58,7 +58,7 @@ public class LogisticRegression implements Strategy
     }
 
     @Override
-    public double calculateError()
+    public double calculateCost()
     {
         double totalError = 0;
         for (int i = 0; i < outputLayer.length; i++)

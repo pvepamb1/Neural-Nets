@@ -7,7 +7,7 @@ public class NeuralNetwork
 {
     private final Layers layers;
     private final Strategy strategy;
-    private static final Strategies defaultStrategy = Strategies.LOGISTIC_REGRESSION;
+    private static final Activation defaultActivation = Activation.LOGISTIC_REGRESSION;
 
     private double previousError = Integer.MAX_VALUE;
     private double minError = Integer.MAX_VALUE;
@@ -16,7 +16,7 @@ public class NeuralNetwork
 
     public NeuralNetwork(int... layers)
     {
-        this(StrategyFactory.getStrategy(defaultStrategy), layers);
+        this(StrategyFactory.getStrategy(defaultActivation), layers);
     }
 
     public NeuralNetwork(Strategy strategy, int... layers)
@@ -47,7 +47,7 @@ public class NeuralNetwork
 
     private void calculateError()
     {
-        double currentError = strategy.calculateError();
+        double currentError = strategy.calculateCost();
 
         if(currentError > previousError)
         {

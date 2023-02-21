@@ -4,6 +4,6 @@ public interface Strategy
 {
     void setLayers(Layers layersObj);
     void forwardPass();
-    double calculateError();
+    double calculateCost();
     void backwardPass(double learningRate);
 }
