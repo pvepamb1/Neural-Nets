@@ -17,8 +17,6 @@ public class Sigmoid implements Strategy
     private double learningRate;
     // Todo: needs to be initialized via constructor
     private double batchSize = 1;
-    // Todo: Nice to have but necessary? Might be easier to use layers directly for calculations
-    private double[][] neuralNetwork;
 
     @Override
     public void setLayers(Layers layersObj)
@@ -33,7 +31,6 @@ public class Sigmoid implements Strategy
         biases = layersObj.getBiases();
         biasGradients = layersObj.getBiasGradients();
         neuronContributions = layersObj.getNeuronContributions();
-        neuralNetwork = layersObj.getNeuralNetwork();
     }
 
     @Override
@@ -84,8 +81,10 @@ public class Sigmoid implements Strategy
         calculateOutputLayerContribution();
         calculateWeightGradientsForOutputLayer();
         calculateWeightGradientsForHiddenLayers();
-        //calculateNewBiasesForOutputLayer();
-        //calculateNewBiasesForHiddenLayers();
+        //clearNeuronContributions();
+        calculateNewBiasesForOutputLayer();
+        calculateNewBiasesForHiddenLayers();
+        clearNeuronContributions();
         updateWeightsAndBiases();
     }
 
@@ -156,27 +155,21 @@ public class Sigmoid implements Strategy
 
     private void calculateNewBiasesForHiddenLayers()
     {
-        for (int i=neuralNetwork.length-5; i>=0; i-=3) // for every bias layer but last
+        for (int i=biases.length-2; i>=0; i--) // for every bias layer but last
         {
-            for (int j = 0; j < neuralNetwork[i].length; j++) // for every bias
+            for (int j = 0; j < biases[i].length; j++) // for every bias
             {
-                double currentBias = neuralNetwork[i][j];
-                //biasGradients[(i-2)/3][j] = currentBias - calculateNeuronContribution(i+1, j, true) * learningRate;
+                //double currentBias = neuralNetwork[i][j];
+                biasGradients[i][j] += neuronContributions[i][j];
             }
         }
     }
 
-    /*private void calculateNewBiasesForOutputLayer()
+    private void calculateNewBiasesForOutputLayer()
     {
-        double[] finalBiasLayer = neuralNetwork[neuralNetwork.length - 2];
-        for (int row = 0; row < finalBiasLayer.length; row++)
-        {
-            double bias = finalBiasLayer[row];
-            double totalContribution = calculateOutputLayerContribution(row);
-            double newBias = bias - totalContribution * learningRate;
-            biasGradients[biasGradients.length - 1][row] = newBias;
-        }
-    }*/
+        double[] finalBiasLayer = biases[biases.length - 1];
+        System.arraycopy(neuronContributions[neuronContributions.length - 1], 0, biasGradients[biasGradients.length - 1], 0, finalBiasLayer.length);
+    }
 
     private void updateWeightsAndBiases()
     {
@@ -190,13 +183,21 @@ public class Sigmoid implements Strategy
                 }
             }
         }
+
+        for (int i = 0; i < biasGradients.length; i++)
+        {
+            for (int j = 0; j < biasGradients[i].length; j++)
+            {
+                biases[i][j] = biases[i][j] - learningRate * (biasGradients[i][j] / batchSize);
+            }
+        }
+    }
+
+    private void clearNeuronContributions()
+    {
         for (double[] neuronContribution : neuronContributions)
         {
             Arrays.fill(neuronContribution, 0);
         }
-        /*for (int i = 0; i < biasGradients.length; i++)
-        {
-            neuralNetwork[i * 3 + 2] = biasGradients[i];
-        }*/
     }
 }
