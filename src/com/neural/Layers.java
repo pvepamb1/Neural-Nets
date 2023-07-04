@@ -13,14 +13,12 @@ public class Layers
     private double[][][] weightGradients;
     private double[][] biases;
     private double[][] biasGradients;
-    private double[][] neuronContributions;
-    private double[][] neuralNetwork;
+    private double[][] netNeuronToErrorValues;
 
     public Layers(int... layers)
     {
         validateLayers(layers);
         initializeLayers(layers);
-        assembleLayers();
     }
 
     private void validateLayers(int... layers)
@@ -48,9 +46,6 @@ public class Layers
         int noOfBiasLayers = noOfHiddenLayers + 1;
         int noOfNonInputLayers = noOfHiddenLayers + 1;
         int noOfOutputs = layers[layers.length - 1];
-        int totalLayers = noOfHiddenLayers + noOfWeightLayers + noOfBiasLayers + 2;
-
-        neuralNetwork = new double[totalLayers][];
 
         initializeInputLayer(noOfInputs);
         initializeHiddenLayers(noOfHiddenLayers);
@@ -123,10 +118,10 @@ public class Layers
 
     private void initializeNeuronContributions(int noOfNonInputLayers)
     {
-        neuronContributions = new double[noOfNonInputLayers][];
+        netNeuronToErrorValues = new double[noOfNonInputLayers][];
         for (int i = 0; i < noOfNonInputLayers; i++)
         {
-            neuronContributions[i] = new double[layers[i+1]];
+            netNeuronToErrorValues[i] = new double[layers[i+1]];
         }
     }
 
@@ -145,23 +140,6 @@ public class Layers
         targetOutputs = new double[noOfOutputs];
     }
 
-    public void assembleLayers()
-    {
-        /*neuralNetwork[0] = inputLayer;
-
-        for (int i = 0; i < biases.length; i++)
-        {
-            neuralNetwork[i * 3 + 2] = biases[i];
-        }
-
-        for (int i = 0; i < hiddenLayers.length; i++)
-        {
-            neuralNetwork[i * 3 + 3] = hiddenLayers[i];
-        }
-
-        neuralNetwork[neuralNetwork.length - 1] = outputLayer;*/
-    }
-
     public double[] getInputLayer()
     {
         return inputLayer;
@@ -173,10 +151,6 @@ public class Layers
         {
             throw new IllegalArgumentException("Mismatch in specified input size " +
                     "and provided input. Difference: " + (inputs.length - inputLayer.length));
-        }
-        for (int i = 0; i < inputs.length; i++)
-        {
-            neuralNetwork[0] = inputs;
         }
     }
 
@@ -200,7 +174,6 @@ public class Layers
                 throw new IllegalArgumentException("Incorrect no. of weights provided for layer: "
                         + i + ". Expected: " + this.weights.length + ", provided: " + weights.length);
             }
-            neuralNetwork[i * 3 + 1] = weights[i];
         }
     }
 
@@ -224,7 +197,6 @@ public class Layers
                 throw new IllegalArgumentException("Incorrect no. of biases provided for layer: "
                         + i + ". Expected: " + this.biases.length + ", provided: " + biases.length);
             }
-            neuralNetwork[i * 3 + 2] = biases[i];
         }
     }
 
@@ -272,13 +244,8 @@ public class Layers
         return biasGradients;
     }
 
-    public double[][] getNeuronContributions()
+    public double[][] getNetNeuronToErrorValues()
     {
-        return neuronContributions;
-    }
-
-    public double[][] getNeuralNetwork()
-    {
-        return neuralNetwork;
+        return netNeuronToErrorValues;
     }
 }
