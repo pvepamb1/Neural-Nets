@@ -34,12 +34,12 @@ public class Sigmoid implements Strategy
     }
 
     @Override
-    public void forwardPass()
+    public double[] forwardPass()
     {
-        calculateOutput();
+        return calculateOutput();
     }
 
-    private void calculateOutput()
+    private double[] calculateOutput()
     {
         for (int i = 0; i < layers.length - 1; i++) // for every layer that acts as input
         {
@@ -59,6 +59,7 @@ public class Sigmoid implements Strategy
                 targetLayer[j] = totalNetInput;
             }
         }
+        return outputLayer;
     }
 
     @Override
@@ -75,7 +76,7 @@ public class Sigmoid implements Strategy
     }
 
     @Override
-    public void backwardPass(double learningRate)
+    public void backwardPass(double learningRate, int length, int j)
     {
         this.learningRate = learningRate; // Todo: should be moved up to constructor
         calculateOutputLayerContribution();
@@ -85,7 +86,10 @@ public class Sigmoid implements Strategy
         calculateNewBiasesForOutputLayer();
         calculateNewBiasesForHiddenLayers();
         clearNeuronContributions();
-        updateWeightsAndBiases();
+        if((j + 1) % batchSize == 0 || j == length - 1) // j is currentSampleIndex
+        {
+            updateWeightsAndBiases();
+        }
     }
 
     private void calculateOutputLayerContribution()
@@ -111,7 +115,7 @@ public class Sigmoid implements Strategy
             {
                 double previousLayerNeuron = previousInputLayer[col];
                 double totalContribution = outputNeuronContribution * previousLayerNeuron;
-                weightGradients[weightGradients.length - 1][row][col] = totalContribution;
+                weightGradients[weightGradients.length - 1][row][col] += totalContribution;
             }
         }
     }
@@ -147,7 +151,7 @@ public class Sigmoid implements Strategy
                         totalContribution *= outputChangeForNetInputs;
                         neuronContributions[i][j] = totalContribution;
                     }
-                    weightGradients[i][j][k] = totalContribution * srcNeuron;
+                    weightGradients[i][j][k] += totalContribution * srcNeuron;
                 }
             }
         }
@@ -190,6 +194,24 @@ public class Sigmoid implements Strategy
             {
                 biases[i][j] = biases[i][j] - learningRate * (biasGradients[i][j] / batchSize);
             }
+        }
+
+        clearGradients();
+    }
+
+    private void clearGradients()
+    {
+        for (double[][] weighGradient: weightGradients)
+        {
+            for (double[] weight: weighGradient)
+            {
+                Arrays.fill(weight, 0);
+            }
+        }
+
+        for (double[] biasGradient: biasGradients)
+        {
+            Arrays.fill(biasGradient, 0);
         }
     }
 

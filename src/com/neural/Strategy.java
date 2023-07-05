@@ -3,7 +3,7 @@ package com.neural;
 public interface Strategy
 {
     void setLayers(Layers layersObj);
-    void forwardPass();
+    double[] forwardPass();
     double calculateCost();
-    void backwardPass(double learningRate);
+    void backwardPass(double learningRate, int length, int j);
 }

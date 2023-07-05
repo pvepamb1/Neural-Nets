@@ -11,8 +11,8 @@ import java.io.IOException;
 public class NeuralNetwork
 {
     private final Layers layers;
-    private final Strategy strategy;
-    private static final Activation defaultActivation = Activation.SIGMOID;
+    private Strategy strategy;
+    private static final Activation DEFAULT_ACTIVATION_FUNCTION = Activation.SIGMOID;
 
     private double previousError = Integer.MAX_VALUE;
     private double minError = Integer.MAX_VALUE;
@@ -23,7 +23,7 @@ public class NeuralNetwork
 
     public NeuralNetwork(int... layers)
     {
-        this(StrategyFactory.getStrategy(defaultActivation), layers);
+        this(StrategyFactory.getStrategy(DEFAULT_ACTIVATION_FUNCTION), layers);
     }
 
     public NeuralNetwork(Strategy strategy, int... layers)
@@ -56,12 +56,12 @@ public class NeuralNetwork
     {
         for (int i=0; i<epochs; i++)
         {
-            for (int j = 0; j<1000; j++)
+            for (int j = 0; j<mnistMatrix.length; j++)
             {
-                setInputsAndOutputs(j);
+                setInputsAndOutputsForRow(j);
                 forwardPass();
                 calculateError();
-                backwardPass(learningRate);
+                backwardPass(learningRate, mnistMatrix.length, j);
             }
         }
 
@@ -95,14 +95,19 @@ public class NeuralNetwork
         previousError = currentError;
     }
 
-    private void backwardPass(double learningRate)
+    private void backwardPass(double learningRate, int length, int j)
     {
-        strategy.backwardPass(learningRate);
+        strategy.backwardPass(learningRate, length, j);
     }
 
-    private void setInputsAndOutputs(int mnistRow)
+    private void setInputsAndOutputsForRow(int mnistRow)
     {
         MnistMatrix matrix = mnistMatrix[mnistRow];
+        setInputsAndOutputs(matrix);
+    }
+
+    private void setInputsAndOutputs(MnistMatrix matrix)
+    {
         double[] inputs = new double[matrix.getNumberOfRows() * matrix.getNumberOfColumns()];
         int pos = 0;
         for (int i = 0; i < matrix.getNumberOfRows(); i++)
@@ -119,11 +124,49 @@ public class NeuralNetwork
         setTargetOutputs(outputs);
     }
 
-    public void setStrategy(Strategies strategy)
+    public void setStrategy(Activation strategy)
     {
         Strategy strategy1 = StrategyFactory.getStrategy(strategy);
         this.strategy = strategy1;
         strategy1.setLayers(layers);
+    }
+
+    public boolean test(MnistMatrix matrix)
+    {
+        setInputsAndOutputs(matrix);
+        double[] output = strategy.forwardPass();
+        int actual = matrix.getLabel();
+        int predicted = findMax(output);
+
+        return actual == predicted;
+        /*for(double out: output)
+        {
+            System.out.print(out + " ");
+        }
+        System.out.println();*/
+    }
+
+    private int findMax(double[] output)
+    {
+        double max = -1000;
+        int maxIndex = 0;
+        for(int i=0; i< output.length; i++)
+        {
+            if(output[i] > max)
+            {
+                max = output[i];
+                maxIndex = i;
+            }
+        }
+        return maxIndex;
+    }
+
+    public void getTargetOutputs()
+    {
+        for (double output: layers.getTargetOutputs())
+        {
+            System.out.print(output + " ");
+        }
     }
 
     public void setInputs(double[] inputs)
