@@ -182,7 +182,7 @@ public class NeuralNetwork
             {
                 double previousLayerNeuron = previousInputLayer[col];
                 double totalContribution = outputNeuronContribution * previousLayerNeuron;
-                weightGradients[weightGradients.length - 1][row][col] = totalContribution;
+                weightGradients[weightGradients.length - 1][row][col] += totalContribution;
             }
         }
     }
@@ -218,7 +218,7 @@ public class NeuralNetwork
                         totalContribution *= outputChangeForNetInputs;
                         netNeuronToErrorValues[i][j] = totalContribution;
                     }
-                    weightGradients[i][j][k] = totalContribution * srcNeuron;
+                    weightGradients[i][j][k] += totalContribution * srcNeuron;
                 }
             }
         }
