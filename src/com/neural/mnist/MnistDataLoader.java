@@ -3,7 +3,7 @@ package com.neural.mnist;
 import com.neural.DataLoader;
 
 import java.io.IOException;
-
+// TODO: Rewrite this class to wrap data into an data object instead of delegating it to this class
 public class MnistDataLoader implements DataLoader
 {
     private static MnistDataLoader mnistDataLoaderInstance;
@@ -31,6 +31,12 @@ public class MnistDataLoader implements DataLoader
         {
             throw new RuntimeException("Check file path"); // Handle this better maybe?
         }
+    }
+
+    @Override
+    public int getLabel(int dataSampleIndex)
+    {
+        return mnistMatrix[dataSampleIndex].getLabel();
     }
 
     @Override

@@ -12,7 +12,8 @@ public class Driver
         //neuralNetwork.train(10000, 1, 0.5f);
 
         MnistNeuralNetwork mnistNeuralNetwork = new MnistNeuralNetwork("/Users/prasenna/Downloads/train-images.idx3-ubyte","/Users/prasenna/Downloads/train-labels.idx1-ubyte", 16, 16);
-        mnistNeuralNetwork.train(1, 1, 0.5f);
+        mnistNeuralNetwork.train(10, 1, 0.05f);
+        mnistNeuralNetwork.test("/Users/prasenna/Downloads/t10K-images.idx3-ubyte","/Users/prasenna/Downloads/t10K-labels.idx1-ubyte");
 
         long stop = System.currentTimeMillis();
         printTimeTaken(start, stop);

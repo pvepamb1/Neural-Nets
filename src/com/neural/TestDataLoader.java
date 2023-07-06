@@ -3,6 +3,12 @@ package com.neural;
 public class TestDataLoader implements DataLoader
 {
     @Override
+    public int getLabel(int dataSampleIndex)
+    {
+        return 0;
+    }
+
+    @Override
     public int getDataSampleIndex()
     {
         return 0;

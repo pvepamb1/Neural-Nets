@@ -301,4 +301,16 @@ public class NeuralNetwork
             Arrays.fill(netNeuronToErrorValue, 0);
         }
     }
+
+    public void test(TestStrategy strategy)
+    {
+        int dataSampleSize = dataLoader.getDataSampleSize();
+        for (int dataSampleIndex = 0; dataSampleIndex < dataSampleSize; dataSampleIndex++)
+        {
+            setData(dataLoader.getNextDataSample());
+            forwardPass();
+            strategy.apply(outputLayer, targetOutputs, dataLoader.getLabel(dataLoader.getDataSampleIndex()));
+        }
+        strategy.printResult();
+    }
 }
