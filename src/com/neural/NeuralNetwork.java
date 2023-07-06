@@ -255,7 +255,7 @@ public class NeuralNetwork
 
     private void updateWeightsAndBiases(int dataSampleIndex)
     {
-        double divisor = dataSampleIndex + 1 % batchSize == 0 ? batchSize : dataSampleIndex + 1 % batchSize;
+        double divisor = (dataSampleIndex + 1) % batchSize == 0 ? batchSize : (dataSampleIndex + 1) % batchSize;
         for (int i = 0; i < weightGradients.length; i++)
         {
             for (int j = 0; j < weightGradients[i].length; j++)
