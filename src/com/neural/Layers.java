@@ -127,7 +127,7 @@ public class Layers
 
     private double[] getRandomDoubles(long streamSize)
     {
-        return new Random().doubles(streamSize, 0, 1).toArray();
+        return new Random().doubles(streamSize, -0.5, 0.5).toArray();
     }
 
     private void initializeOutputLayer(int noOfOutputs)
