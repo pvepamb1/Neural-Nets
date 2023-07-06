@@ -309,7 +309,7 @@ public class NeuralNetwork
         {
             setData(dataLoader.getNextDataSample());
             forwardPass();
-            strategy.apply(outputLayer, targetOutputs, dataLoader.getLabel(dataLoader.getDataSampleIndex()));
+            strategy.apply(outputLayer, targetOutputs, dataLoader.getLabel(dataSampleIndex));
         }
         strategy.printResult();
     }
