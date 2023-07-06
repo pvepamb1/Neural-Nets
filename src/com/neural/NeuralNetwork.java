@@ -20,6 +20,7 @@ public class NeuralNetwork
     private double learningRate;
     private double batchSize;
 
+    private final DataLoader dataLoader;
     private static final Activation defaultActivation = Activation.SIGMOID;
 
     private double previousError = Integer.MAX_VALUE;
@@ -27,9 +28,16 @@ public class NeuralNetwork
     private double errorRiseFromPreviousCount = 0;
     private double errorRiseFromMinCount = 0;
 
-    public NeuralNetwork(int... layers)
+    public NeuralNetwork(InputType inputType, int... layers)
     {
         initializeModel(new Layers(layers));
+        dataLoader = DataLoaderFactory.getDataLoader(inputType);
+        if(inputType == InputType.TEST)
+        {
+            assert dataLoader != null;
+            setWeights(((TestDataLoader)dataLoader).getWeights());
+            setBiases(((TestDataLoader)dataLoader).getBiases());
+        }
     }
 
     private void initializeModel(Layers layersObj)
@@ -50,17 +58,17 @@ public class NeuralNetwork
     {
         this.learningRate = learningRate;
         this.batchSize = batchSize;
-        int dataSampleLength = 2; // Todo: should be set by a separate class
+        int dataSampleSize = dataLoader.getDataSampleSize();
         for (int i = 0; i < epochs; i++)
         {
-            for (int dataSampleIndex = 0; dataSampleIndex < batchSize; dataSampleIndex++)
+            for (int dataSampleIndex = 0; dataSampleIndex < dataSampleSize; dataSampleIndex++)
             {
-                // Todo: Input and Output to be set by a loader class
+                setData(dataLoader.getNextDataSample());
                 forwardPass();
                 calculateError();
                 backwardPass();
 
-                if((dataSampleIndex + 1) % batchSize == 0 || dataSampleIndex + 1 == dataSampleLength)
+                if((dataSampleIndex + 1) % batchSize == 0 || dataSampleIndex + 1 == dataSampleSize)
                 {
                     updateWeightsAndBiases(dataSampleIndex);
                 }
@@ -92,24 +100,29 @@ public class NeuralNetwork
         previousError = currentError;
     }
 
+    private void setData(double[][] inputsAndOutputs)
+    {
+        setInputs(inputsAndOutputs[0]);
+        setTargetOutputs(inputsAndOutputs[1]);
+    }
+
     // Todo: The following 4 methods needs to validate the input params. Copy logic from Layers class?
-    public void setInputs(double[] inputs)
+    private void setInputs(double[] inputs)
     {
         inputLayer = inputs;
     }
 
-    public void setTargetOutputs(double[] outputs)
+    private void setTargetOutputs(double[] outputs)
     {
         targetOutputs = outputs;
     }
 
-    // Todo: wrap the following 2 methods into a tester class to limit access
-    public void setWeights(double[][][] weights)
+    private void setWeights(double[][][] weights)
     {
         this.weights = weights;
     }
 
-    public void setBiases(double[][] biases)
+    private void setBiases(double[][] biases)
     {
         this.biases = biases;
     }
@@ -153,7 +166,6 @@ public class NeuralNetwork
         calculateOutputLayerContribution();
         calculateWeightGradientsForOutputLayer();
         calculateWeightGradientsForHiddenLayers();
-        //clearNeuronContributions();
         calculateBiasGradientsForOutputLayer();
         calculateBiasGradientsForHiddenLayers();
         clearNetNeuronToErrorValues();
@@ -261,6 +273,24 @@ public class NeuralNetwork
             {
                 biases[i][j] = biases[i][j] - learningRate * (biasGradients[i][j] / divisor);
             }
+        }
+
+        clearGradients();
+    }
+
+    private void clearGradients()
+    {
+        for (double[][] weighGradient: weightGradients)
+        {
+            for (double[] weight: weighGradient)
+            {
+                Arrays.fill(weight, 0);
+            }
+        }
+
+        for (double[] biasGradient: biasGradients)
+        {
+            Arrays.fill(biasGradient, 0);
         }
     }
 
