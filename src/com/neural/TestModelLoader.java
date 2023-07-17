@@ -1,6 +1,6 @@
 package com.neural;
 
-public class TestDataLoader implements DataLoader
+public class TestModelLoader implements DataLoader
 {
     @Override
     public int getLabel(int dataSampleIndex)

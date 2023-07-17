@@ -1,4 +1,4 @@
-package com.neural;
+package com.neural.activation;
 
 public enum Activation
 {

@@ -8,7 +8,7 @@ public class DataLoaderFactory
     {
         return switch (inputType)
         {
-            case TEST -> new TestDataLoader();
+            case TEST -> new TestModelLoader();
             case MNIST -> MnistDataLoader.getInstance();
         };
     }

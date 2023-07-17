@@ -1,5 +1,7 @@
 package com.neural;
 
+import com.neural.activation.Activation;
+
 import java.util.Arrays;
 
 /**
@@ -35,8 +37,8 @@ public class NeuralNetwork
         if(inputType == InputType.TEST)
         {
             assert dataLoader != null;
-            setWeights(((TestDataLoader)dataLoader).getWeights());
-            setBiases(((TestDataLoader)dataLoader).getBiases());
+            setWeights(((TestModelLoader)dataLoader).getWeights());
+            setBiases(((TestModelLoader)dataLoader).getBiases());
         }
     }
 
