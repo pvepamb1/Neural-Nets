@@ -9,6 +9,8 @@ import java.util.Arrays;
  */
 public class NeuralNetwork
 {
+    private static final Activation defaultActivation = Activation.SIGMOID;
+    private final DataLoader dataLoader;
     private int[] layers;
     private double[] inputLayer;
     private double[] outputLayer;
@@ -21,10 +23,6 @@ public class NeuralNetwork
     private double[][] netNeuronToErrorValues;
     private double learningRate;
     private double batchSize;
-
-    private final DataLoader dataLoader;
-    private static final Activation defaultActivation = Activation.SIGMOID;
-
     private double previousError = Integer.MAX_VALUE;
     private double minError = Integer.MAX_VALUE;
     private double errorRiseFromPreviousCount = 0;
@@ -34,11 +32,11 @@ public class NeuralNetwork
     {
         initializeModel(new Layers(layers));
         dataLoader = DataLoaderFactory.getDataLoader(inputType);
-        if(inputType == InputType.TEST)
+        if (inputType == InputType.TEST)
         {
             assert dataLoader != null;
-            setWeights(((TestModelLoader)dataLoader).getWeights());
-            setBiases(((TestModelLoader)dataLoader).getBiases());
+            setWeights(((TestModelLoader) dataLoader).getWeights());
+            setBiases(((TestModelLoader) dataLoader).getBiases());
         }
     }
 
@@ -70,7 +68,7 @@ public class NeuralNetwork
                 calculateError();
                 backwardPass();
 
-                if((dataSampleIndex + 1) % batchSize == 0 || dataSampleIndex + 1 == dataSampleSize)
+                if ((dataSampleIndex + 1) % batchSize == 0 || dataSampleIndex + 1 == dataSampleSize)
                 {
                     updateWeightsAndBiases(dataSampleIndex);
                 }
@@ -85,12 +83,12 @@ public class NeuralNetwork
     {
         double currentError = calculateCost();
 
-        if(currentError > previousError)
+        if (currentError > previousError)
         {
             errorRiseFromPreviousCount++;
         }
 
-        if(currentError > minError)
+        if (currentError > minError)
         {
             errorRiseFromMinCount++;
         }
@@ -133,10 +131,10 @@ public class NeuralNetwork
     {
         for (int i = 0; i < layers.length - 1; i++) // for every layer that acts as input
         {
-            double[] previousInputLayer = i==0 ? inputLayer : hiddenLayers[i-1]; // hidden layers act as input after 1st iteration
+            double[] previousInputLayer = i == 0 ? inputLayer : hiddenLayers[i - 1]; // hidden layers act as input after 1st iteration
             double[][] weightLayer = weights[i];
             double[] biasLayer = biases[i];
-            double[] targetLayer = i == layers.length - 2 ? outputLayer: hiddenLayers[i]; // switch target to output layer for last iteration
+            double[] targetLayer = i == layers.length - 2 ? outputLayer : hiddenLayers[i]; // switch target to output layer for last iteration
             for (int j = 0; j < targetLayer.length; j++) // for every target neuron
             {
                 double totalNetInput = 0;
@@ -191,7 +189,7 @@ public class NeuralNetwork
         double[] previousInputLayer = hiddenLayers[hiddenLayers.length - 1];
         for (int row = 0; row < finalWeightLayer.length; row++)
         {
-            double outputNeuronContribution = netNeuronToErrorValues[netNeuronToErrorValues.length -1][row];
+            double outputNeuronContribution = netNeuronToErrorValues[netNeuronToErrorValues.length - 1][row];
             for (int col = 0; col < finalWeightLayer[row].length; col++)
             {
                 double previousLayerNeuron = previousInputLayer[col];
@@ -203,16 +201,16 @@ public class NeuralNetwork
 
     private void calculateWeightGradientsForHiddenLayers()
     {
-        for (int i = weights.length - 2; i>=0; i--) // for every weight layer but last
+        for (int i = weights.length - 2; i >= 0; i--) // for every weight layer but last
         {
             for (int j = 0; j < weights[i].length; j++) // for every weight row (also destNeuronRow)
             {
                 for (int k = 0; k < weights[i][j].length; k++) // for every weight (also srcNeuronRow)
                 {
-                    double[] previousLayer = i!=0 ? hiddenLayers[i - 1] : inputLayer; // Todo: extract to method?
+                    double[] previousLayer = i != 0 ? hiddenLayers[i - 1] : inputLayer; // Todo: extract to method?
                     double srcNeuron = previousLayer[k];
                     double totalContribution = 0;
-                    if(netNeuronToErrorValues[i][j] != 0.0) // the odds the contribution was actually 0?
+                    if (netNeuronToErrorValues[i][j] != 0.0) // the odds the contribution was actually 0?
                     {
                         totalContribution = netNeuronToErrorValues[i][j];
                     }
@@ -240,7 +238,7 @@ public class NeuralNetwork
 
     private void calculateBiasGradientsForHiddenLayers()
     {
-        for (int i=biases.length-2; i>=0; i--) // for every bias layer but last
+        for (int i = biases.length - 2; i >= 0; i--) // for every bias layer but last
         {
             for (int j = 0; j < biases[i].length; j++) // for every bias
             {
@@ -282,15 +280,15 @@ public class NeuralNetwork
 
     private void clearGradients()
     {
-        for (double[][] weighGradient: weightGradients)
+        for (double[][] weighGradient : weightGradients)
         {
-            for (double[] weight: weighGradient)
+            for (double[] weight : weighGradient)
             {
                 Arrays.fill(weight, 0);
             }
         }
 
-        for (double[] biasGradient: biasGradients)
+        for (double[] biasGradient : biasGradients)
         {
             Arrays.fill(biasGradient, 0);
         }

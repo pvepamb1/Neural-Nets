@@ -7,7 +7,7 @@ import java.io.*;
 public class MnistImageGenerator {
 
     public static void main(String[] args) throws IOException {
-        generateImage("/Users/prasenna/Downloads/train-images.idx3-ubyte", "/Users/prasenna/Downloads/train-labels.idx1-ubyte", "/Users/prasenna/Downloads/mnist-images/train");
+        generateImage("mnistData/train-images.idx3-ubyte", "mnistData/train-labels.idx1-ubyte", "mnistData/mnist-images/");
     }
 
     public static void generateImage(String dataFilePath, String labelFilePath, String outputPath) throws IOException {

@@ -77,8 +77,8 @@ public class Layers
         weights = new double[noOfWeightLayers][][];
         for (int i = 0; i < noOfWeightLayers; i++)
         {
-            weights[i] = new double[layers[i+1]][];
-            for (int j = 0; j < layers[i+1]; j++)
+            weights[i] = new double[layers[i + 1]][];
+            for (int j = 0; j < layers[i + 1]; j++)
             {
                 weights[i][j] = getRandomDoubles(layers[i]);
             }
@@ -90,8 +90,8 @@ public class Layers
         weightGradients = new double[noOfWeightLayers][][];
         for (int i = 0; i < noOfWeightLayers; i++)
         {
-            weightGradients[i] = new double[layers[i+1]][];
-            for (int j = 0; j < layers[i+1]; j++)
+            weightGradients[i] = new double[layers[i + 1]][];
+            for (int j = 0; j < layers[i + 1]; j++)
             {
                 weightGradients[i][j] = new double[layers[i]];
             }
@@ -121,7 +121,7 @@ public class Layers
         netNeuronToErrorValues = new double[noOfNonInputLayers][];
         for (int i = 0; i < noOfNonInputLayers; i++)
         {
-            netNeuronToErrorValues[i] = new double[layers[i+1]];
+            netNeuronToErrorValues[i] = new double[layers[i + 1]];
         }
     }
 
