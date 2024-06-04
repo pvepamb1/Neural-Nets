@@ -32,11 +32,11 @@ public class NeuralNetwork
     {
         initializeModel(new Layers(layers));
         dataLoader = DataLoaderFactory.getDataLoader(inputType);
-        if (inputType == InputType.TEST)
+        if (inputType == InputType.CUSTOM)
         {
             assert dataLoader != null;
-            setWeights(((TestModelLoader) dataLoader).getWeights());
-            setBiases(((TestModelLoader) dataLoader).getBiases());
+            setWeights(((CustomDataLoader) dataLoader).getWeights());
+            setBiases(((CustomDataLoader) dataLoader).getBiases());
         }
     }
 
@@ -186,7 +186,7 @@ public class NeuralNetwork
     private void calculateWeightGradientsForOutputLayer()
     {
         double[][] finalWeightLayer = weights[weights.length - 1];
-        double[] previousInputLayer = hiddenLayers[hiddenLayers.length - 1];
+        double[] previousInputLayer = layers.length < 3 ? inputLayer : hiddenLayers[hiddenLayers.length - 1];
         for (int row = 0; row < finalWeightLayer.length; row++)
         {
             double outputNeuronContribution = netNeuronToErrorValues[netNeuronToErrorValues.length - 1][row];
@@ -304,6 +304,11 @@ public class NeuralNetwork
 
     public void test(TestStrategy strategy)
     {
+        if(dataLoader instanceof CustomDataLoader) // horrible
+        {
+            CustomDataLoader.forTraining = false;
+        }
+
         int dataSampleSize = dataLoader.getDataSampleSize();
         for (int dataSampleIndex = 0; dataSampleIndex < dataSampleSize; dataSampleIndex++)
         {

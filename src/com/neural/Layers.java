@@ -23,9 +23,9 @@ public class Layers
 
     private void validateLayers(int... layers)
     {
-        if (layers.length < 3)
+        if (layers.length < 2)
         {
-            throw new IllegalArgumentException("Please specify at least 3 layers");
+            throw new IllegalArgumentException("Please specify at least 2 layers");
         }
 
         for (int layer : layers)
