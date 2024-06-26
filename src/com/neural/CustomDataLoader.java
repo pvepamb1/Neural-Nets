@@ -44,7 +44,7 @@ public class CustomDataLoader implements DataLoader
     {
         if(forTraining)
         {
-            return new double[][]{{3},{4}};
+            return new double[][]{{0.05, 0.10}};
         }
         else
         {
@@ -56,7 +56,7 @@ public class CustomDataLoader implements DataLoader
     {
         if(forTraining)
         {
-            return new double[][]{{6}, {8}};
+            return new double[][]{{0.01, 0.99}};
         }
         else
         {
@@ -72,11 +72,11 @@ public class CustomDataLoader implements DataLoader
 
     public double[][][] getWeights()
     {
-        return new double[][][]{{{1}}};
+        return new double[][][]{{{0.15, 0.20}, {0.25, 0.30}}, {{0.40, 0.45}, {0.50, 0.55}}};
     }
 
     public double[][] getBiases()
     {
-        return new double[][]{{0}};
+        return new double[][]{{0.35, 0.35}, {0.60, 0.60}};
     }
 }

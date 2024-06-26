@@ -2,7 +2,7 @@ package com.neural;
 
 import java.util.Random;
 
-public class Layers
+public class Model implements Cloneable
 {
     private int[] layers;
     private double[] inputLayer;
@@ -15,7 +15,7 @@ public class Layers
     private double[][] biasGradients;
     private double[][] netNeuronToErrorValues;
 
-    public Layers(int... layers)
+    public Model(int... layers)
     {
         validateLayers(layers);
         initializeLayers(layers);
@@ -247,5 +247,32 @@ public class Layers
     public double[][] getNetNeuronToErrorValues()
     {
         return netNeuronToErrorValues;
+    }
+
+    /**
+     * This method is used to provide a copy without reinitializing the weights and biases.
+     * @return a clone of the model object
+     */
+    @Override
+    public Model clone()
+    {
+        try
+        {
+            Model clone = (Model) super.clone();
+
+            clone.layers = layers.clone();
+            clone.inputLayer = inputLayer.clone();
+            clone.outputLayer = outputLayer.clone();
+            clone.targetOutputs = targetOutputs.clone();
+            clone.hiddenLayers = hiddenLayers.clone();
+            clone.weightGradients = weightGradients.clone();
+            clone.biasGradients = biasGradients.clone();
+            clone.netNeuronToErrorValues = netNeuronToErrorValues.clone();
+
+            return clone;
+        } catch (CloneNotSupportedException e)
+        {
+            throw new AssertionError();
+        }
     }
 }
