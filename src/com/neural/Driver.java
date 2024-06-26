@@ -8,14 +8,16 @@ public class Driver
     {
         long start = System.currentTimeMillis();
 
-        //NeuralNetwork neuralNetwork = new NeuralNetwork(InputType.TEST, 2, 2, 2);
-        //neuralNetwork.train(10000, 1, 0.5f);
+        //NeuralNetwork neuralNetwork = new NeuralNetwork(InputType.CUSTOM, 1,1);
+        //neuralNetwork.train(10, 1, 0.11);
+        //neuralNetwork.test(new CustomTester());
 
         MnistNeuralNetwork mnistNeuralNetwork = new MnistNeuralNetwork("mnistData/train-images.idx3-ubyte","mnistData/train-labels.idx1-ubyte",  32);
         mnistNeuralNetwork.train(1, 32, 1);
         mnistNeuralNetwork.test("mnistData/t10k-images.idx3-ubyte","mnistData/t10k-labels.idx1-ubyte");
 
         long stop = System.currentTimeMillis();
+
         printTimeTaken(start, stop);
     }
 
