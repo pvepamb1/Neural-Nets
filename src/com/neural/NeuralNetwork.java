@@ -69,17 +69,18 @@ public class NeuralNetwork
     {
         this.learningRate = learningRate;
         this.batchSize = batchSize;
-        int dataSampleSize = dataLoader.getDataSampleSize();
+        int datasetSize = dataLoader.getDatasetSize();
+
         for (int i = 0; i < epochs; i++)
         {
-            for (int dataSampleIndex = 0; dataSampleIndex < dataSampleSize; dataSampleIndex++)
+            for (int dataSampleIndex = 0; dataSampleIndex < datasetSize; dataSampleIndex++)
             {
                 setData(dataLoader.getNextDataSample());
                 forwardPass();
                 calculateCost();
                 backwardPass();
 
-                if ((dataSampleIndex + 1) % batchSize == 0 || dataSampleIndex + 1 == dataSampleSize)
+                if ((dataSampleIndex + 1) % batchSize == 0 || dataSampleIndex + 1 == datasetSize)
                 {
                     calculateError(dataSampleIndex);
                     updateWeightsAndBiases(dataSampleIndex);
@@ -97,11 +98,13 @@ public class NeuralNetwork
         double currentError = errorTotal/divisor;
         System.out.println("Total error: " + currentError);
 
+        // implies that we moved in the wrong direction
         if (currentError > previousError)
         {
             errorRiseFromPreviousCount++;
         }
 
+        // the number of times we missed the global(?) minimum
         if (currentError > minError)
         {
             errorRiseFromMinCount++;
@@ -150,6 +153,7 @@ public class NeuralNetwork
             double[][] weightLayer = weights[i];
             double[] biasLayer = biases[i];
             double[] targetLayer = i == layers.length - 2 ? outputLayer : hiddenLayers[i]; // switch target to output layer for last iteration
+
             for (int j = 0; j < targetLayer.length; j++) // for every target neuron
             {
                 double totalNetInput = 0;
@@ -200,6 +204,7 @@ public class NeuralNetwork
     {
         double[][] finalWeightLayer = weights[weights.length - 1];
         double[] previousInputLayer = layers.length < 3 ? inputLayer : hiddenLayers[hiddenLayers.length - 1];
+
         for (int row = 0; row < finalWeightLayer.length; row++)
         {
             double outputNeuronContribution = netNeuronToErrorValues[netNeuronToErrorValues.length - 1][row];
@@ -223,6 +228,7 @@ public class NeuralNetwork
                     double[] previousLayer = i != 0 ? hiddenLayers[i - 1] : inputLayer; // Todo: extract to method?
                     double srcNeuron = previousLayer[k];
                     double totalContribution = 0;
+
                     if (netNeuronToErrorValues[i][j] != 0.0) // the odds the contribution was actually 0?
                     {
                         totalContribution = netNeuronToErrorValues[i][j];
@@ -232,14 +238,15 @@ public class NeuralNetwork
                         double[] destLayer = hiddenLayers[i];
                         double destNeuron = destLayer[j];
                         double outputChangeForNetInputs = destNeuron * (1 - destNeuron);
-
                         double[] nextLayer = i != hiddenLayers.length - 1 ? hiddenLayers[i + 1] : outputLayer;
+
                         for (int l = 0; l < nextLayer.length; l++) // 4 nested loops - can we do better?
                         {
                             double nextLayerNeuronContribution = netNeuronToErrorValues[i + 1][l];
                             nextLayerNeuronContribution *= weights[i + 1][l][j]; // too tired to understand index relations
                             totalContribution += nextLayerNeuronContribution;
                         }
+
                         totalContribution *= outputChangeForNetInputs;
                         netNeuronToErrorValues[i][j] = totalContribution;
                     }
@@ -322,7 +329,7 @@ public class NeuralNetwork
             CustomDataLoader.forTraining = false;
         }
 
-        int dataSampleSize = dataLoader.getDataSampleSize();
+        int dataSampleSize = dataLoader.getDatasetSize();
         for (int dataSampleIndex = 0; dataSampleIndex < dataSampleSize; dataSampleIndex++)
         {
             setData(dataLoader.getNextDataSample());

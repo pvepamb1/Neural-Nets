@@ -8,5 +8,5 @@ public interface DataLoader
 
     double[][] getNextDataSample();
 
-    int getDataSampleSize();
+    int getDatasetSize();
 }

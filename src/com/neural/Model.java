@@ -13,7 +13,7 @@ public class Model implements Cloneable
     private double[][][] weightGradients;
     private double[][] biases;
     private double[][] biasGradients;
-    private double[][] netNeuronToErrorValues;
+    private double[][] netNeuronToErrorValues; // stores the error contribution of each neuron
 
     public Model(int... layers)
     {
