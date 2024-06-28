@@ -28,7 +28,7 @@ public class CustomDataLoader implements DataLoader
         inputsAndOutputs[0] = inputs[currentDataSampleIndex];
         inputsAndOutputs[1] = outputs[currentDataSampleIndex];
 
-        if(currentDataSampleIndex == getDataSampleSize() - 1)
+        if(currentDataSampleIndex == getDatasetSize() - 1)
         {
             currentDataSampleIndex = 0;
         }
@@ -65,7 +65,7 @@ public class CustomDataLoader implements DataLoader
     }
 
     @Override
-    public int getDataSampleSize()
+    public int getDatasetSize()
     {
         return getInputs().length;
     }

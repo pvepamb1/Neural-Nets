@@ -3,16 +3,18 @@ package com.neural.mnist;
 import com.neural.DataLoader;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
+
 // TODO: Rewrite this class to wrap data into an data object instead of delegating it to this class
 public class MnistDataLoader implements DataLoader
 {
     private static MnistDataLoader mnistDataLoaderInstance;
     private static MnistMatrix[] mnistMatrix;
-    private static int currentDataSampleIndex;
+    private static final AtomicInteger currentDataSampleIndex = new AtomicInteger(0);
 
     private MnistDataLoader(){}
 
-    public static MnistDataLoader getInstance()
+    public static synchronized MnistDataLoader getInstance()
     {
         if(mnistDataLoaderInstance == null)
         {
@@ -42,13 +44,13 @@ public class MnistDataLoader implements DataLoader
     @Override
     public int getDataSampleIndex()
     {
-        return currentDataSampleIndex;
+        return currentDataSampleIndex.get();
     }
 
     @Override
-    public double[][] getNextDataSample() // everything needs to be rewritten
+    public synchronized double[][] getNextDataSample() // everything needs to be rewritten
     {
-        MnistMatrix matrix = mnistMatrix[currentDataSampleIndex];
+        MnistMatrix matrix = mnistMatrix[currentDataSampleIndex.get()];
 
         double[] inputs = new double[matrix.getNumberOfRows() * matrix.getNumberOfColumns()];
         int pos = 0;
@@ -64,20 +66,20 @@ public class MnistDataLoader implements DataLoader
         double[] outputs = new double[10];
         outputs[matrix.getLabel()] = 1;
 
-        if(currentDataSampleIndex == getDataSampleSize() - 1)
+        if(currentDataSampleIndex.get() == getDatasetSize() - 1)
         {
-            currentDataSampleIndex = 0;
+            currentDataSampleIndex.set(0);
         }
         else
         {
-            currentDataSampleIndex++; // Remember to rewrite when multithreading!
+            currentDataSampleIndex.incrementAndGet();
         }
 
         return new double[][]{inputs, outputs};
     }
 
     @Override
-    public int getDataSampleSize()
+    public int getDatasetSize()
     {
         return mnistMatrix.length;
     }

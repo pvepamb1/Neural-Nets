@@ -18,7 +18,7 @@ public class MnistTester implements TestStrategy
     @Override
     public void printResult()
     {
-        int totalDataSamples = MnistDataLoader.getInstance().getDataSampleSize();
+        int totalDataSamples = MnistDataLoader.getInstance().getDatasetSize();
         int correctlyIdentifiedSamples = correct;
         float accuracy = ((float)correctlyIdentifiedSamples/(float)totalDataSamples) * 100;
 
