@@ -35,9 +35,9 @@ public class NeuralNetwork
     private double errorRiseFromPreviousCount = 0;
     private double errorRiseFromMinCount = 0;
 
-    public NeuralNetwork(InputType inputType, int... layers)
+    public NeuralNetwork(InputType inputType, Model model)
     {
-        extractModel(new Model(layers));
+        extractModel(model);
         dataLoader = DataLoaderFactory.getDataLoader(inputType);
         if (inputType == InputType.CUSTOM)
         {
