@@ -3,7 +3,13 @@ package com.neural;
 public class CustomDataLoader implements DataLoader
 {
     public static boolean forTraining = true;
-    private int currentDataSampleIndex;
+    private int nextDataSampleIndex;
+
+    @Override
+    public boolean hasNext()
+    {
+        return getDatasetSize() >= nextDataSampleIndex;
+    }
 
     @Override
     public int getLabel(int dataSampleIndex)
@@ -14,7 +20,13 @@ public class CustomDataLoader implements DataLoader
     @Override
     public int getDataSampleIndex()
     {
-        return currentDataSampleIndex;
+        return nextDataSampleIndex;
+    }
+
+    @Override
+    public void resetDataSampleIndex()
+    {
+
     }
 
     @Override
@@ -25,16 +37,16 @@ public class CustomDataLoader implements DataLoader
         double[][] inputs = getInputs();
         double[][] outputs = getOutputs();
 
-        inputsAndOutputs[0] = inputs[currentDataSampleIndex];
-        inputsAndOutputs[1] = outputs[currentDataSampleIndex];
+        inputsAndOutputs[0] = inputs[nextDataSampleIndex];
+        inputsAndOutputs[1] = outputs[nextDataSampleIndex];
 
-        if(currentDataSampleIndex == getDatasetSize() - 1)
+        if(nextDataSampleIndex == getDatasetSize() - 1)
         {
-            currentDataSampleIndex = 0;
+            nextDataSampleIndex = 0;
         }
         else
         {
-            currentDataSampleIndex++; // Remember to rewrite when multithreading!
+            nextDataSampleIndex++; // Remember to rewrite when multithreading!
         }
 
         return inputsAndOutputs;
@@ -68,6 +80,18 @@ public class CustomDataLoader implements DataLoader
     public int getDatasetSize()
     {
         return getInputs().length;
+    }
+
+    @Override
+    public boolean hasMoreBatches()
+    {
+        return false;
+    }
+
+    @Override
+    public void loadBatch()
+    {
+
     }
 
     public double[][][] getWeights()
