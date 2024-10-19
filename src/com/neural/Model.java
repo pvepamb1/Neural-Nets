@@ -15,7 +15,7 @@ public class Model implements Cloneable
     private double[][][] weightGradients;
     private double[][] biases;
     private double[][] biasGradients;
-    private double[][] netNeuronToErrorValues; // stores the error contribution of each neuron
+    private double[][] netNeuronToErrorValues; // stores the error contribution of each neuron. dError/dNet.
 
     public Model(int... layers)
     {
@@ -319,5 +319,19 @@ public class Model implements Cloneable
         }
 
         return result;
+    }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder("Model:");
+        builder.append("\n\t\tInput Neurons: ").append(inputLayer.length);
+        builder.append("\n\t\tHidden Neurons: ");
+        for (int i = 0; i < hiddenLayers.length; i++)
+        {
+            builder.append("\tHidden Layer #").append(i+1).append(" -> ").append(hiddenLayers[i].length);
+        }
+        builder.append("\n\t\tOutput Neurons: ").append(outputLayer.length);
+        return builder.toString();
     }
 }

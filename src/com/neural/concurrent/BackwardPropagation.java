@@ -15,15 +15,13 @@ public class BackwardPropagation
         double[][] hiddenLayers = model.getHiddenLayers();
         double[][][] weights = model.getWeights();
         double[][][] weightGradients = model.getWeightGradients();
-        double[][] biases = model.getBiases();
         double[][] biasGradients = model.getBiasGradients();
         double[][] netNeuronToErrorValues = model.getNetNeuronToErrorValues();
 
         calculateOutputLayerContribution(outputLayer, targetOutputs, netNeuronToErrorValues);
         calculateWeightGradientsForOutputLayer(layers, inputLayer, hiddenLayers, weights, weightGradients, netNeuronToErrorValues);
         calculateWeightGradientsForHiddenLayers(inputLayer, outputLayer, hiddenLayers, weights, weightGradients, netNeuronToErrorValues);
-        calculateBiasGradientsForOutputLayer(biases, biasGradients, netNeuronToErrorValues);
-        calculateBiasGradientsForHiddenLayers(biases, biasGradients, netNeuronToErrorValues);
+        calculateBiasGradients(biasGradients, netNeuronToErrorValues);
         clearNetNeuronToErrorValues(netNeuronToErrorValues);
     }
 
@@ -98,23 +96,15 @@ public class BackwardPropagation
         }
     }
 
-    private static void calculateBiasGradientsForHiddenLayers(double[][] biases, double[][] biasGradients,
-                                                       double[][] netNeuronToErrorValues)
+    private static void calculateBiasGradients(double[][] biasGradients, double[][] netNeuronToErrorValues)
     {
-        for (int i = biases.length - 1; i >= 0; i--) // for every bias layer but last
+        for (int i = 0; i < biasGradients.length; i++) // for every bias layer
         {
-            for (int j = 0; j < biases[i].length; j++) // for every bias
+            for (int j = 0; j < biasGradients[i].length; j++) // for every bias
             {
                 biasGradients[i][j] += netNeuronToErrorValues[i][j];
             }
         }
-    }
-
-    private static void calculateBiasGradientsForOutputLayer(double[][] biases, double[][] biasGradients,
-                                                      double[][] netNeuronToErrorValues)
-    {
-        double[] finalBiasLayer = biases[biases.length - 1];
-        //System.arraycopy(netNeuronToErrorValues[netNeuronToErrorValues.length - 1], 0, biasGradients[biasGradients.length - 1], 0, finalBiasLayer.length);
     }
 
     private static void clearNetNeuronToErrorValues(double[][] netNeuronToErrorValues)

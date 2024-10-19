@@ -188,8 +188,7 @@ public class NeuralNetwork
         calculateOutputLayerContribution();
         calculateWeightGradientsForOutputLayer();
         calculateWeightGradientsForHiddenLayers();
-        calculateBiasGradientsForOutputLayer();
-        calculateBiasGradientsForHiddenLayers();
+        calculateBiasGradients();
         clearNetNeuronToErrorValues();
     }
 
@@ -261,21 +260,15 @@ public class NeuralNetwork
         }
     }
 
-    private void calculateBiasGradientsForHiddenLayers()
+    private void calculateBiasGradients()
     {
-        for (int i = biases.length - 1; i >= 0; i--) // for every bias layer but last
+        for (int i = biases.length - 1; i >= 0; i--) // for every bias layer
         {
             for (int j = 0; j < biases[i].length; j++) // for every bias
             {
                 biasGradients[i][j] += netNeuronToErrorValues[i][j];
             }
         }
-    }
-
-    private void calculateBiasGradientsForOutputLayer()
-    {
-        double[] finalBiasLayer = biases[biases.length - 1];
-        //System.arraycopy(netNeuronToErrorValues[netNeuronToErrorValues.length - 1], 0, biasGradients[biasGradients.length - 1], 0, finalBiasLayer.length);
     }
 
     private void updateWeightsAndBiases(int dataSampleIndex)
