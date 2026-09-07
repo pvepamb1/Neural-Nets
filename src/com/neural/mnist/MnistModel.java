@@ -2,7 +2,7 @@ package com.neural.mnist;
 
 import com.neural.Model;
 
-class MnistModel extends Model
+public class MnistModel extends Model
 {
     private static final int INPUT_NEURONS = 784; // 28 rows x 28 columns
     private static final int OUTPUT_NEURONS = 10;
@@ -11,7 +11,6 @@ class MnistModel extends Model
     {
         super(buildLayerInfo(hiddenLayers));
     }
-
 
     private static int[] buildLayerInfo(int... hiddenLayers)
     {

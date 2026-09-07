@@ -1,5 +1,6 @@
 package com.neural.mnist;
 
+import com.neural.DataLoaderFactory;
 import com.neural.InputType;
 import com.neural.NeuralNetwork;
 
@@ -9,7 +10,7 @@ public class MnistNeuralNetwork extends NeuralNetwork
 
     public MnistNeuralNetwork(String imgDirPath, String labelDirPath, int... hiddenLayers)
     {
-        super(InputType.MNIST, new MnistModel(hiddenLayers));
+        super(DataLoaderFactory.getDataLoader(InputType.MNIST), new MnistModel(hiddenLayers));
         MnistDataLoader.loadMnistData(imgDirPath, labelDirPath);
         tester = new MnistTester();
     }

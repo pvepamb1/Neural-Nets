@@ -35,13 +35,12 @@ public class NeuralNetwork
     private double errorRiseFromPreviousCount = 0;
     private double errorRiseFromMinCount = 0;
 
-    public NeuralNetwork(InputType inputType, Model model)
+    public NeuralNetwork(DataLoader dataLoader, Model model)
     {
         extractModel(model);
-        dataLoader = DataLoaderFactory.getDataLoader(inputType);
-        if (inputType == InputType.CUSTOM)
+        this.dataLoader = dataLoader;
+        if (dataLoader instanceof CustomDataLoader) //horrible
         {
-            assert dataLoader != null;
             setWeights(((CustomDataLoader) dataLoader).getWeights());
             setBiases(((CustomDataLoader) dataLoader).getBiases());
         }
@@ -49,7 +48,6 @@ public class NeuralNetwork
 
     /**
      * Assigns values from the given model object to corresponding class variables, to improve readability.
-     * @param model
      */
     private void extractModel(Model model)
     {
@@ -73,7 +71,9 @@ public class NeuralNetwork
 
         for (int i = 0; i < epochs; i++)
         {
-            for (int dataSampleIndex = 0; dataSampleIndex < datasetSize; dataSampleIndex++)
+            dataLoader.resetDataSampleIndex();
+            dataLoader.loadBatch();
+            for (int dataSampleIndex = 0; dataSampleIndex < datasetSize; dataSampleIndex++) // can be removed later
             {
                 setData(dataLoader.getNextDataSample());
                 forwardPass();
@@ -84,6 +84,10 @@ public class NeuralNetwork
                 {
                     calculateError(dataSampleIndex);
                     updateWeightsAndBiases(dataSampleIndex);
+                    if(dataLoader.hasMoreBatches())
+                    {
+                        dataLoader.loadBatch();
+                    }
                 }
             }
         }
@@ -94,6 +98,7 @@ public class NeuralNetwork
 
     private void calculateError(int dataSampleIndex)
     {
+        // math.min(dataSampleIndex + 1 % batchSize, batchSize) should also work
         double divisor = (dataSampleIndex + 1) % batchSize == 0 ? batchSize : (dataSampleIndex + 1) % batchSize;
         double currentError = errorTotal/divisor;
         System.out.println("Total error: " + currentError);
@@ -183,8 +188,7 @@ public class NeuralNetwork
         calculateOutputLayerContribution();
         calculateWeightGradientsForOutputLayer();
         calculateWeightGradientsForHiddenLayers();
-        calculateBiasGradientsForOutputLayer();
-        calculateBiasGradientsForHiddenLayers();
+        calculateBiasGradients();
         clearNetNeuronToErrorValues();
     }
 
@@ -256,21 +260,15 @@ public class NeuralNetwork
         }
     }
 
-    private void calculateBiasGradientsForHiddenLayers()
+    private void calculateBiasGradients()
     {
-        for (int i = biases.length - 2; i >= 0; i--) // for every bias layer but last
+        for (int i = biases.length - 1; i >= 0; i--) // for every bias layer
         {
             for (int j = 0; j < biases[i].length; j++) // for every bias
             {
                 biasGradients[i][j] += netNeuronToErrorValues[i][j];
             }
         }
-    }
-
-    private void calculateBiasGradientsForOutputLayer()
-    {
-        double[] finalBiasLayer = biases[biases.length - 1];
-        System.arraycopy(netNeuronToErrorValues[netNeuronToErrorValues.length - 1], 0, biasGradients[biasGradients.length - 1], 0, finalBiasLayer.length);
     }
 
     private void updateWeightsAndBiases(int dataSampleIndex)
@@ -329,12 +327,18 @@ public class NeuralNetwork
             CustomDataLoader.forTraining = false;
         }
 
-        int dataSampleSize = dataLoader.getDatasetSize();
-        for (int dataSampleIndex = 0; dataSampleIndex < dataSampleSize; dataSampleIndex++)
+        dataLoader.resetDataSampleIndex();
+        dataLoader.loadBatch();
+        while (dataLoader.hasNext())
         {
-            setData(dataLoader.getNextDataSample());
+            double[][] dataSample = dataLoader.getNextDataSample();
+            setData(dataSample);
             forwardPass();
-            strategy.apply(outputLayer, targetOutputs, dataLoader.getLabel(dataSampleIndex));
+            strategy.apply(outputLayer, targetOutputs, (int)dataSample[2][0]); // more horrible stuff
+            if(!dataLoader.hasNext() && dataLoader.hasMoreBatches())
+            {
+                dataLoader.loadBatch();
+            }
         }
         strategy.printResult();
     }

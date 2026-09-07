@@ -1,5 +1,7 @@
 package com.neural;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class Model implements Cloneable
@@ -13,7 +15,7 @@ public class Model implements Cloneable
     private double[][][] weightGradients;
     private double[][] biases;
     private double[][] biasGradients;
-    private double[][] netNeuronToErrorValues; // stores the error contribution of each neuron
+    private double[][] netNeuronToErrorValues; // stores the error contribution of each neuron. dError/dNet.
 
     public Model(int... layers)
     {
@@ -127,6 +129,8 @@ public class Model implements Cloneable
 
     private double[] getRandomDoubles(long streamSize)
     {
+        //return java.util.stream.DoubleStream.generate(() -> 0.1).limit(streamSize).toArray();
+
         return new Random().doubles(streamSize, -0.5, 0.5).toArray();
     }
 
@@ -152,6 +156,8 @@ public class Model implements Cloneable
             throw new IllegalArgumentException("Mismatch in specified input size " +
                     "and provided input. Difference: " + (inputs.length - inputLayer.length));
         }
+
+        inputLayer = inputs;
     }
 
     public double[][][] getWeights()
@@ -212,10 +218,8 @@ public class Model implements Cloneable
             throw new IllegalArgumentException("Mismatch in specified output size " +
                     "and provided target outputs. Difference: " + (outputs.length - outputLayer.length));
         }
-        for (int i = 0; i < outputs.length; i++)
-        {
-            targetOutputs = outputs;
-        }
+
+        targetOutputs = outputs;
     }
 
     // all getters in this class exist to make extracting layers info easier. Maybe a utility method to replace these?
@@ -251,6 +255,8 @@ public class Model implements Cloneable
 
     /**
      * This method is used to provide a copy without reinitializing the weights and biases.
+     * Josh Bloch thinks this is a bad idea. I should investigate and refactor later to a
+     * copy constructor but this works for now, if at all it does.
      * @return a clone of the model object
      */
     @Override
@@ -259,20 +265,73 @@ public class Model implements Cloneable
         try
         {
             Model clone = (Model) super.clone();
-
             clone.layers = layers.clone();
             clone.inputLayer = inputLayer.clone();
             clone.outputLayer = outputLayer.clone();
             clone.targetOutputs = targetOutputs.clone();
-            clone.hiddenLayers = hiddenLayers.clone();
-            clone.weightGradients = weightGradients.clone();
-            clone.biasGradients = biasGradients.clone();
-            clone.netNeuronToErrorValues = netNeuronToErrorValues.clone();
-
+            clone.hiddenLayers = deepCopy2dArray(hiddenLayers);
+            clone.weightGradients = deepCopy3dArray(weightGradients);
+            clone.biasGradients = deepCopy2dArray(biasGradients);
+            clone.netNeuronToErrorValues = deepCopy2dArray(netNeuronToErrorValues);
             return clone;
-        } catch (CloneNotSupportedException e)
+        }
+        catch (CloneNotSupportedException e)
         {
             throw new AssertionError();
         }
+    }
+
+    public List<Model> cloneModels(int noOfModels)
+    {
+        List<Model> models = new ArrayList<>();
+        for (int i = 0; i < noOfModels; i++)
+        {
+            models.add(clone());
+        }
+        return models;
+    }
+
+    // Util methods - move to a separate class later
+    private double[][] deepCopy2dArray(double[][] originalArray)
+    {
+        if (originalArray == null)
+        {
+            return null;
+        }
+
+        double[][] result = new double[originalArray.length][];
+        for (int i = 0; i < originalArray.length; i++) {
+            result[i] = originalArray[i].clone();
+        }
+        return result;
+    }
+
+    private double[][][] deepCopy3dArray(double[][][] originalArray)
+    {
+        if (originalArray == null)
+        {
+            return null;
+        }
+
+        double[][][] result = new double[originalArray.length][][];
+        for (int i = 0; i < originalArray.length; i++) {
+            result[i] = deepCopy2dArray(originalArray[i]);
+        }
+
+        return result;
+    }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder("Model:");
+        builder.append("\n\t\tInput Neurons: ").append(inputLayer.length);
+        builder.append("\n\t\tHidden Neurons: ");
+        for (int i = 0; i < hiddenLayers.length; i++)
+        {
+            builder.append("\tHidden Layer #").append(i+1).append(" -> ").append(hiddenLayers[i].length);
+        }
+        builder.append("\n\t\tOutput Neurons: ").append(outputLayer.length);
+        return builder.toString();
     }
 }
