@@ -6,6 +6,4 @@ It has been extended to add the ability to classify digits using the MNIST datas
 
 # Upcoming features 
 
-- Parallelize using multi-threading
-
 - Support for more Activation functions
